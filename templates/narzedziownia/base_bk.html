@@ -1,0 +1,162 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>workstations_html</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/Navigation-Clean.css" />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/Contact-Form-Clean.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/Navigation-with-Search.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    {% block css %}
+
+    {% endblock css %}
+
+<style>
+#primary_nav_wrap
+{
+	margin-top:15px
+}
+
+#primary_nav_wrap ul
+{
+	list-style:none;
+	position:relative;
+	float:left;
+	margin:0;
+	padding:0
+}
+
+#primary_nav_wrap ul a
+{
+	display:block;
+	color:#333;
+	text-decoration:none;
+	font-weight:700;
+	font-size:12px;
+	line-height:32px;
+	padding:0 15px;
+	font-family:"HelveticaNeue","Helvetica Neue",Helvetica,Arial,sans-serif
+}
+
+#primary_nav_wrap ul li
+{
+	position:relative;
+	float:left;
+	margin:0;
+	padding:0
+}
+
+#primary_nav_wrap ul li.current-menu-item
+{
+	background:#ddd
+}
+
+#primary_nav_wrap ul li:hover
+{
+	background:#f6f6f6
+}
+
+#primary_nav_wrap ul ul
+{
+	display:none;
+	position:absolute;
+	top:100%;
+	left:0;
+	background:#fff;
+	padding:0
+}
+
+#primary_nav_wrap ul ul li
+{
+	float:none;
+	width:200px
+}
+
+#primary_nav_wrap ul ul a
+{
+	line-height:120%;
+	padding:10px 15px
+}
+
+#primary_nav_wrap ul ul ul
+{
+	top:0;
+	left:100%
+}
+
+#primary_nav_wrap ul li:hover > ul
+{
+	display:block
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav id="primary_nav_wrap">
+
+<a class="navbar-brand" href=#><img src="{% static 'narzedziownia/logo.jpg' %}" alt="s" ></a>
+<ul>
+  <li class="current-menu-item"><a href="{% url 'narzedziownia:pracownicy_lista'%}">Pracownicy</a></li>
+  <li><a href="{% url 'narzedziownia:narzedzia_lista'%}">Narzedzia</a></li>
+  <li><a href=#>Dzialy</a></li>
+  <li><a href=#>Szablony pobran</a></li>
+</ul>
+</nav>
+</div>
+<br><br><br>
+{% block body%}
+{% endblock %}
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+<script type="text/javascript">
+
+function myFilter(pos,inp) {
+  var input, filter, table, tr, td, i;
+  input = document.getElementById(inp);
+  filter = input.value.toUpperCase();
+  table = document.getElementById("tabela");
+  tr = table.getElementsByTagName("tr");
+  for (i = 1; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[pos];
+    if (td) {
+      if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }       
+  }
+}
+
+function runVnc() {
+    try {
+		var shell = new ActiveXObject("WScript.Shell");  
+		
+    		/*var appTvnViewer = "C:\\Program Files\\TightVNC\\tvnviewer.exe\";*/
+    		shell.run('notepad.exe');
+	} catch(e) {
+    		alert(e);
+	}
+
+}
+$(function() {
+   $( ".datepicker" ).datepicker({
+     changeMonth: true,
+     changeYear: true,
+     yearRange: "1900:2012",
+     // You can put more options here.
+
+   });
+ });
+</script>
+</html>

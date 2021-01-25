@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+{% extends 'narzedziownia/base.html' %}
+
+{% block body %}
+<div class="container" align="center">
+	<br><br><br>
+
+	<form name="narz" method="POST" enctype="multipart/form-data" action="">
+	{% csrf_token %}
+	
+		<input type="text" name="nazwa" id="nazwa" value="{{Narz.nazwa}}"></input>
+		<br>
+		<br>
+
+		<input type="text" name="opis" id="opis" value="{{Narz.opis}}"></input>
+		<br>
+		<br>
+		<br>
+		<input type="submit" class="btn btn-info"  value="OK"></input>
+
+	</form>
+</div>
+{% endblock body %}

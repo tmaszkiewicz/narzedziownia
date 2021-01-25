@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+{% extends 'narzedziownia/base.html' %}
+
+{% load staticfiles %}
+{% block body %}
+<div>
+<table>
+<tr>
+<td>
+{{Prac.nr_pracownika}}
+</td>
+<td>
+{{Prac.nazwisko_imie}}
+</td>
+<td>
+<img src="{% static 'odziez/photos/' %}{{Prac.nr_pracownika}}.bmp" style="width:100px;">
+
+</td>
+</tr>
+</table>
+</div>
+<table>
+<tr>
+<form name="prac" method="POST" enctype="multipart/form-data" action="">
+{% csrf_token %}
+{{FormPracownik}}
+<input type="hidden" name="nr_pracownika" id="nr_pracownika" value="{{Prac.nr_pracownika}}" readonly></input>
+<input type="hidden" name="nazwisko_imie" id="nazwisko_imie" value="{{Prac.nazwisko_imie}}" readonly></input>
+<input type="hidden" name="dzial" id="dzial"  value="{{Prac.dzial}}" readonly></input>
+<input type="hidden" name="stanowisko" id="stanowisko" value="{{Prac.stanowisko}}" readonly></input>
+<input type="hidden" name="spot" id="spot" value="{{Prac.spot}}" readonly></input>
+<input type="hidden" name="podgrupa_prac" id="podgrupa_prac" value="{{Prac.podgrupa_prac}}" readonly></input>
+<input type="hidden" name="typ_umowy" id="typ_umowy" value="{{Prac.typ_umowy}}" readonly></input>
+<input type="hidden" name="nr_karty" id="nr_karty" value="{{Prac.nr_karty}}" readonly></input>
+<td>
+<input type="text" name="komentarz" id="komentarz" value="{{Prac.komentarz}}"></input>
+</td>
+</tr>
+</table>
+{%for L in Lista_narz %}
+	
+	<input type="checkbox" name={{L}}>{{L.nazwa}}</input>
+	<input type="number" name="Ilisc_{{L}}" min="0" max="9" size=3></input>
+
+
+{%endfor%}
+
+<input type="submit" value="submit"></input>
+<a href="{% url 'narzedziownia:pracownicy_lista'%}">ddd</a>
+
+</form>
+{% endblock body %}

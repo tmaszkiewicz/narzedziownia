@@ -1,0 +1,125 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>NARZEDZIOWNIA</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" href="{% static 'narzedziownia/css/styles.css' %}"  type="text/css" />
+
+    <script type="text/javascript">
+        setTimeout(function() {
+            window.location.href = "{% url 'narzedziownia:login' %}";
+        }, 10000);
+    </script>
+
+</head>
+{% block body %}
+<div class="container">
+
+	<div class="row">
+		<div class="col-3">
+  			<img src="{% static 'odziez/photos/' %}{{Prac.nr_pracownika}}.bmp" width="200px">
+		</div>
+		<div class="col-6">
+			<script>
+			var j = 0;
+			</script>
+			 <ul class="list-group list-group-flush">
+			{%for i,n in Narz_temp.items %}
+			<script>
+			var id1 = "narz_";
+			var idn = "il_narz_";
+			id=id1+j;
+			idd=idn+j;
+			var n="{{n}}"
+			var v="{{i}}";
+			document.write('<li class="list-group-item">');
+			document.write(v);
+			document.write('</li>');
+
+			document.getElementById(id).value = v;
+			document.getElementById(idd).value = n;
+			j=j+1;
+
+			</script>
+			{%endfor%}
+		</div>
+		<div class="col-3">
+			<script>
+			var j = 0;
+			</script>
+			 <ul class="list-group list-group-flush">
+			{%for i,n in Narz_temp.items %}
+			<script>
+			var id1 = "narz_";
+			var idn = "il_narz_";
+			id=id1+j;
+			idd=idn+j;
+			var n="{{n}}"
+			var v="{{i}}";
+			document.write('<li class="list-group-item">');
+			document.write(n);
+			document.write('</li>');
+
+			document.getElementById(id).value = v;
+			document.getElementById(idd).value = n;
+			j=j+1;
+
+			</script>
+			{%endfor%}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-6">
+    			<h5 class="card-title">DANE PRACOWNIKA</h5>
+			  <ul class="list-group list-group-flush">
+			    <li class="list-group-item">{{Prac.nr_pracownika}}</li>
+			    <li class="list-group-item">{{Prac.nazwisko_imie}}</li>
+			    <li class="list-group-item">{{Prac.dzial}}</li>
+			  </ul>
+		</div>
+		<div class="col-6">
+			<center>
+			<a>POTWIERDZAM LISTĘ UŻYTKOWANYCH NARZĘDZI</a>
+			<form name="prac" method="GET" enctype="multipart/form-data" action="">
+				{% csrf_token %}
+				{{form.potwierdzenie}}
+				
+			<center>
+
+		</div>
+	</div>
+		
+
+
+</div>
+
+
+
+<script type="text/javascript">
+function hide(id) {
+if( document.getElementById(id).style.visibility == "visible")
+{
+document.getElementById(id).style.visibility = "hidden";
+}
+else
+{	
+document.getElementById(id).style.visibility = "visible";
+document.getElementById(id).type = "text";
+
+}
+}
+function fill() {
+
+alert("Hello! I am an alert box!!");
+}
+
+
+</script>
+{% endblock body %}

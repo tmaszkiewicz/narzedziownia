@@ -1,0 +1,4 @@
+<form method="GET">
+  {% csrf_token %}
+  {{ form }}
+</form>

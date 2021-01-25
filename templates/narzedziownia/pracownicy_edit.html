@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+{% extends 'narzedziownia/base.html' %}
+
+{% load staticfiles %}
+{% block body %}
+<script>
+var dz = [];
+var wa = [];
+</script>
+{%for i in dzialy%}
+<script>
+dz.push("{{i.dzial}}");
+</script>
+{%endfor%}
+{%for i in warianty%}
+<script>
+wa.push({
+    wariant: "{{i.wariant}}",
+    dzial: "{{i.dzial}}"
+});
+</script>
+{%endfor%}
+
+<div class="container" align="center">
+	<div class="row">
+		<div class="col-10">
+			<form name="wypozycz" method="POST" enctype="multipart/form-data" action="">	
+				<br><br>
+				{% csrf_token %}
+				{{form.narzedzie}}
+				{{form.ilosc}}
+				<input type="date" id="data_pobrania" onLoad="getDate()" name="data_pobrania" value= {{form.data_pobrannia}}></input>
+				<input type="date" id="data_oddania" name="data_oddania" value={{form.data_oddania}}></input>
+				<input type="submit" value="DODAJ"></input>
+			</form>
+		<br><br>
+
+
+                                <label class="control-label">Narzędzia dla Dzialu:</label>
+                                <select onChange="initWariant()" id="dzial"  name="Dzial">
+                                <option value={{Prac.dzial}} selected disabled hidden>{{Prac.dzial}}</option>
+                                   {%for i in dzialy%}
+                                    <option value="{{i.dzial}}">{{i.dzial}}</option>
+                                   {%endfor%}
+                                </select>
+                                <label class="control-label">Wariant:</label>
+
+                                <select id="wariant"  name="Wariant">
+                                <option value={{dzial}} selected disabled hidden>{{dzial}}</option>
+                                </select>
+                                <button onClick="goAddr('dzial','wariant',{{Prac.pk}})">GENERUJ</button>
+
+
+
+
+
+
+		
+		</div>
+		<div class="col-2">
+			<br><br>
+			<button onClick="goAddrBar({{Prac.pk}})">TRYB BARCODE</button>
+			
+		</div>
+	</div>
+	<div class="row">
+		<br><br><br>
+	</div>
+	<div class="row">
+		<div class="col-4">
+			<a>PRACOWNIK</a>
+			<br><br>
+
+			<img src="{% static 'odziez/photos/' %}{{Prac.nr_pracownika}}.bmp" style="width:150px;" align="center">
+			<br>
+			{{Prac.nr_pracownika}}
+			<br>
+			{{Prac.nazwisko_imie}}
+			<br>
+			<a href={% url 'narzedziownia:potwierdz' Prac.pk %}>WYSWIETL</a>
+			
+		</div>
+		<div class="col-8">
+			<table id="tabel" class="table table-sm">
+			<tr>
+			<th>
+			NARZĘDZIE/OPIS
+			
+			</th>
+			<th>
+			ILOŚĆ
+			
+			</th>
+			</tr>
+			{%for i in Pobr_filter%}
+			<tr>
+			<td>
+			{{i.narzedzie}} / {{i.narzedzie.opis}}
+			</td>
+			<td>
+			{{i.ilosc}}
+			</td>
+			<td>
+			{{i.data_pobrania}}
+			</td>
+			<td>
+			{{i.data_oddania}}
+			</td>
+			<td>
+			<a href='http://jan-svr-intra01:8000/narzedziownia/pracownicy_usun_pobranie/{{Prac.pk}}/{{i.pk}}/'>X</a>
+			</td>
+			</tr>
+			{%endfor%}
+			</table>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+        try{
+    var today = new Date();
+document.getElementById("data_pobrania").value = today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
+                d = document.getElementById("dzial");
+
+        } catch(error){
+                alert(error);
+        }
+        var sel_war=document.getElementById("wariant");
+        while(sel_war.options.length > 0) {
+        sel_war.remove(0);
+        }
+        for(i in wa){
+                if(wa[i].dzial==d.value){
+                        var option = document.createElement("option");
+                        option.text=wa[i].wariant;
+                        sel_war.add(option);
+                }
+        }
+
+function hide(id) {
+if( document.getElementById(id).style.visibility == "visible")
+{
+document.getElementById(id).style.visibility = "hidden";
+}
+else
+{	
+document.getElementById(id).style.visibility = "visible";
+document.getElementById(id).type = "text";
+
+}
+}
+function fill() {
+
+alert("Hello! I am an alert box!!");
+}
+
+function initWariant() {
+        //document.write(wa,dz);
+        try{
+                d = document.getElementById("dzial");
+
+        } catch(error){
+                alert(error);
+        }
+        var sel_war=document.getElementById("wariant");
+        while(sel_war.options.length > 0) {
+        sel_war.remove(0);
+        }
+        for(i in wa){
+                if(wa[i].dzial==d.value){
+                        //document.write(wa[i].dzial,d.value);
+                        //document.write(wa[i].wariant);
+                        var option = document.createElement("option");
+                        option.text=wa[i].wariant;
+                        sel_war.add(option);
+                }
+        }
+}
+
+function goAddr(dzial,war,prac) {
+
+dzial = document.getElementById(dzial);
+war = document.getElementById(war);
+
+
+url="http://jan-svr-intra01:8000/narzedziownia/pracownicy_szablon/"+dzial.value+"/"+war.value+"/"+prac+"/";
+ window.location.href = url;
+
+}
+function goAddrBar(prac) {
+
+
+url="http://jan-svr-intra01:8000/narzedziownia/pracownicy_edit_barcode/"+prac+"/";
+window.location.href = url;
+
+}
+</script>
+{% endblock body %}

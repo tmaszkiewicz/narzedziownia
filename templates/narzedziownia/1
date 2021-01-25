@@ -1,0 +1,142 @@
+from django.shortcuts import render
+from .models import *
+#from django.http import httpresponse
+
+def start(request):
+    return None
+#NARZEDZIA
+def narzedzia_lista(request, *args, **kwargs):
+    context = {
+    }
+    url='narzedziownia/narzedzia_lista.html'
+    Narzedzia=Narzedzie.objects.all()
+    print(Narzedzia)
+    context['Narzedzia']=Narzedzia   
+    return render(request,url,context)
+def narzedzia_edit(request, *args, **kwargs):
+    print(request.POST)
+    context = {
+    }
+    url='narzedziownia/narzedzia_edit.html'
+    pk=kwargs['pk']
+    Narz=Narzedzie.objects.get(pk=pk)
+    if request.method == 'POST':
+        form = NarzedzieForm(request.POST,instance=Narz)
+        if form.is_valid():
+            Narz.nazwa=form.cleaned_data['nazwa']
+            Narz.opis=form.cleaned_data['opis']
+            Narz.save()
+        else:
+            None
+    else:
+        form = NarzedzieForm()
+    context['form']=form
+    context['Narz']=Narz
+       #context['form']=form
+    return render(request,url,context)
+
+#EMPLOYEE/PRACOWNICY
+
+def pracownicy_lista(request, *args, **kwargs):
+    context = {
+    }
+    url='narzedziownia/pracownicy_lista.html'
+    Pracownicy=Pracownik.objects.all()
+    context['Pracownicy']=Pracownicy
+    return render(request,url,context)
+
+def pracownicy_edit(request, *args, **kwargs):
+    context = {
+    }
+    url='narzedziownia/pracownicy_edit.html'
+    pk=kwargs['pk']
+    Numery_narz=range(10)
+    Prac=Pracownik.objects.get(pk=pk)
+    Narz_temp_str=Prac.narzedzia
+    Narz_temp_list=Narz_temp_str.split(";")
+    Narz_temp={
+    }
+    for i in Narz_temp_list:
+        if i.split(":")[0]!="":  #wuwalamy ostatniego pustaka
+            print(i)
+            print(i.split(":")[0])
+            try:
+                Narz_temp[i.split(":")[0]]=i.split(":")[1]
+            except:
+                break;
+    
+    print(Narz_temp)
+
+    Lista_narz=Narzedzie.objects.all()
+    print(request.POST)
+    narz_list=""
+    if request.method == 'POST':
+        form = PracownikForm(request.POST,instance=Prac)
+        if form.is_valid():
+            Prac.komentarz=form.cleaned_data['komentarz']
+            for i in Numery_narz:
+                narz="narz_{}".format(i)
+                #is_narz="is_narz_{}".format(i)
+                il_narz="il_narz_{}".format(i)
+                narz_list+=request.POST[narz]
+                narz_list+=":"
+                narz_list+=request.POST[il_narz]
+                narz_list+=";"
+            Prac.narzedzia=narz_list
+            Prac.save()
+        else:
+            None
+    else:
+        form =PracownikForm()
+    context['form']=form
+    context['Prac']=Prac
+    context['Numery_narz']=Numery_narz
+    
+
+
+    context['Lista_narz']=Lista_narz
+    context['Narz_temp']=Narz_temp
+       #context['form']=form
+    return render(request,url,context)
+
+def import_pracownikow(request, *args, **kwargs):
+    from openpyxl import load_workbook
+    from openpyxl.utils import get_column_letter
+    import os
+    url='narzedziownia/import_pracownikow.html'
+    context={
+    }
+
+    path_src="Stan.XLSX"
+    wb_src = load_workbook(path_src) 
+    sheet_src = wb_src.active
+    rows=[]
+    
+    for i in range(1500)[2:]:
+        row = []
+        cell_src_1 = sheet_src.cell(row = i, column = 1)
+        cell_src_2 = sheet_src.cell(row = i, column = 2)
+        cell_src_3 = sheet_src.cell(row = i, column = 3)
+        cell_src_4 = sheet_src.cell(row = i, column = 4)
+        cell_src_5 = sheet_src.cell(row = i, column = 5) #DATA
+        cell_src_6 = sheet_src.cell(row = i, column = 6) #SPOT
+        cell_src_7 = sheet_src.cell(row = i, column = 7) #Rodzaj wynagrodzenia
+        cell_src_8 = sheet_src.cell(row = i, column = 8) #TypUmowy
+        cell_src_9 = sheet_src.cell(row = i, column = 9) #Karta
+        try:
+            p, created=Pracownik.objects.get_or_create(nr_pracownika=cell_src_1.value)
+            p.nr_pracownika=cell_src_1.value
+            p.nazwisko_imie=cell_src_2.value
+            p.dzial=cell_src_3.value
+            p.stanowisko=cell_src_4.value
+            p.zatrudnienie=cell_src_5.value
+            p.spot=cell_src_6.value
+            p.podgrupa_prac=cell_src_7.value
+            p.typ_umowy=cell_src_8.value
+            p.nr_karty=int(cell_src_9.value)
+            p.save()
+            rows.append(p)
+        except:
+            None
+    context['rows']=rows
+    return render(request,url,context)

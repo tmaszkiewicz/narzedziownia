@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+{% extends 'narzedziownia/base.html' %}
+
+{% load staticfiles %}
+{% block body %}
+
+<div class="container">
+
+	<div class="row">
+		<br><br><br>
+	</div>
+	<div class="row">
+		<div class="col-3">
+		</div>
+		<div class="col-3">
+			<div class=row>
+				<div class="col">
+				<a>PRACOWNIK</a>
+				<br><br>
+
+				<img src="{% static 'odziez/photos/' %}{{Prac.nr_pracownika}}.bmp" style="width:150px;" align="left">
+				</div>
+			</div>
+
+			<div class=row>
+				<div class="col">
+					<br>
+					{{Prac.nr_pracownika}}
+					<br>
+					{{Prac.nazwisko_imie}}
+					<br>
+				</div>
+			</div>
+	</div>
+	<div class="col-3">
+		<table>
+		<form name="prac" method="POST" enctype="multipart/form-data" action="">
+		{% csrf_token %}
+		<table>
+		<tr>
+		<td>
+		{{FormPracownik}}
+		<a>NARZĘDZIA<br></a>
+		<a> <br></a>
+
+		<input type="hidden" name="nr_pracownika" id="nr_pracownika" value="{{Prac.nr_pracownika}}" readonly></input>
+		<input type="hidden" name="nazwisko_imie" id="nazwisko_imie" value="{{Prac.nazwisko_imie}}" readonly></input>
+		<input type="hidden" name="dzial" id="dzial"  value="{{Prac.dzial}}" readonly></input>
+		<input type="hidden" name="stanowisko" id="stanowisko" value="{{Prac.stanowisko}}" readonly></input>
+		<input type="hidden" name="spot" id="spot" value="{{Prac.spot}}" readonly></input>
+		<input type="hidden" name="podgrupa_prac" id="podgrupa_prac" value="{{Prac.podgrupa_prac}}" readonly></input>
+		<input type="hidden" name="typ_umowy" id="typ_umowy" value="{{Prac.typ_umowy}}" readonly></input>
+		<input type="hidden" name="nr_karty" id="nr_karty" value="{{Prac.nr_karty}}" readonly></input>
+		<input type="text" name="komentarz" id="komentarz" value="{{Prac.komentarz}}"></input>
+
+		</td>
+		</tr>
+		{%for i in Numery_narz%}
+		<tr>
+		<td>
+			<input type="checkbox" onclick="fill()" name=is_narz_{{i}}></input>
+
+			<input type="text" id=narz_{{i}}  name="narz_{{i}}" size=15></input>
+			<input type="number" id=il_narz_{{i}}  name="il_narz_{{i}}" min=0 max=9 size=2></input>
+			
+
+		{%endfor%}
+
+		<script>
+		var j = 0;
+		</script>
+		{%for i,n in Narz_temp.items %}
+		<script>
+		var id1 = "narz_";
+		var idn = "il_narz_";
+		id=id1+j;
+		idd=idn+j;
+		var n="{{n}}"
+		var v="{{i}}";
+
+		document.getElementById(id).value = v;
+		document.getElementById(idd).value = n;
+		j=j+1;
+
+		</script>
+		{%endfor%}
+
+		<script>
+		var j=0;
+		</script>
+		{% for i,n in Narz_temp.items %}
+		<script>
+		var id1 = "narz_";
+		var idn = "il_narz_";
+		id=id1+j;
+		idd=idn+j;
+		var n="{{n}}"
+		var v="{{i}}";
+
+		document.write(j);
+		/*document.write(v);
+		document.write("      ");
+		
+		document.write(n);
+		document.write(id,idd);*/
+		document.getElementyId(id).value = v;
+		document.getElementById(idd).value = n;
+		j++;
+		</script>
+		{%endfor%}
+		</td>
+		</tr>
+		<tr>
+		<td>
+		</td>
+		</tr>
+		</table>
+	</div>
+	<div class="col-3">
+	</div>
+	</div>
+	<div class="row">
+		<div class="col" align="center">
+	
+			<input type="submit" value="submit"></input>
+		</div>
+	</div>
+</div>
+
+</form>
+
+
+<script type="text/javascript">
+function hide(id) {
+if( document.getElementById(id).style.visibility == "visible")
+{
+document.getElementById(id).style.visibility = "hidden";
+}
+else
+{	
+document.getElementById(id).style.visibility = "visible";
+document.getElementById(id).type = "text";
+
+}
+}
+function fill() {
+
+alert("Hello! I am an alert box!!");
+}
+
+
+</script>
+{% endblock body %}

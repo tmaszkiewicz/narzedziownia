@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+{% extends 'narzedziownia/base.html' %}
+{% load staticfiles %}
+{% block body %}
+<div>
+<table>
+<tr>
+<td>
+{{Prac.nr_pracownika}}
+</td>
+<td>
+{{Prac.nazwisko_imie}}
+</td>
+<td>
+<img src="{% static 'odziez/photos/' %}{{Prac.nr_pracownika}}.bmp" style="width:100px;">
+
+</td>
+</tr>
+</table>
+</div>
+{{FormPracownik}}
+<table>
+<script>
+var j = 0;
+</script>
+{%for i,n in Narz_temp.items %}
+<script>
+var id1 = "narz_";
+var idn = "il_narz_";
+id=id1+j;
+idd=idn+j;
+var n="{{n}}"
+var v="{{i}}";
+document.write('<tr>');
+document.write('<td>');
+document.write(v);
+document.write('</td>');
+document.write('<td>');
+document.write(n);
+document.getElementById(id).value = v;
+document.getElementById(idd).value = n;
+j=j+1;
+document.write('</td>');
+document.write('</tr>');
+</script>
+{%endfor%}
+<tr>
+<td>
+</td>
+</tr>
+</table>
+
+
+
+<script type="text/javascript">
+function hide(id) {
+if( document.getElementById(id).style.visibility == "visible")
+{
+document.getElementById(id).style.visibility = "hidden";
+}
+else
+{	
+document.getElementById(id).style.visibility = "visible";
+document.getElementById(id).type = "text";
+
+}
+}
+function fill() {
+
+alert("Hello! I am an alert box!!");
+}
+
+
+</script>
+{% endblock body %}

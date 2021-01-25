@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+{% extends 'narzedziownia/base.html' %}
+
+{% block body %}
+    <div>
+        <div class="container" align="center">
+            <div class="row">
+			
+		<table id="tabela" class="table table-sm" >
+		<tr>
+			<td>
+				<label class="control-label">Narzędzia dla Dzialu:</label>
+				<select id="kol1"  onChange="goAddr(value,'kol1','war')" onSelect="goAddr(value,'kol1','war')" name="Dzial">
+				<option value={{dzial}} selected disabled hidden>{{dzial}}</option>
+				   {%for i in dzialy%}
+				    <option value="{{i.dzial}}">{{i.dzial}}</option>
+				   {%endfor%}
+				</select>
+
+				<select id="war"  onChange="goAddr(value,'kol1','war')" onSelect="goAddr(value,'kol1','war')" name="Wariant">
+				<option value={{wariant}} selected disabled hidden>{{wariant}}</option>
+				   {%for i in Warianty%}
+				    <option value="{{i.wariant}}">{{i.wariant}}</option>
+				   {%endfor%}
+				</select>
+			</td>
+			<td>
+				<label class="control-label">Ilosc</label>
+				<span class="glyphicon glyphicon-search"></span>
+			</td>
+			<td style="display:none;">
+				<label class="control-label">Narzedzie</label>
+				<span class="glyphicon glyphicon-search"></span>
+			</td>
+			<td>
+				<label class="control-label">USUN</label>
+				<span class="glyphicon glyphicon-search"></span>
+			</td>
+		
+		</tr>
+		{% for n in Szablon %}
+		<tr>
+		<td>
+		{{ n.narzedzie}}</a>
+		</td>
+		<td>
+		{{ n.ilosc }}
+		</td>
+		<td style="display:none;">
+		{{n.dzial}}
+		</td>
+		<td>
+		<a href={% url 'narzedziownia:szablony_usun' n.pk dzial n.wariant %}>X</a>
+		</td>
+		</tr>
+		{%endfor%}
+		<tr>
+		<td align="right">
+			<br><br>
+			<h1> DODAJ POZYCJĘ SZABLONU</h1>
+		
+                        <form name="szablon" method="POST" enctype="multipart/form-data" action="">
+                                <br><br>
+                                {% csrf_token %}
+                                {{form.narzedzie}}
+                                {{form.ilosc}}
+                                <input type="submit" class="btn btn-outline-primary" value="DODAJ"></input>
+                        </form>
+		</td>
+		</tr>
+		</table>
+		
+            </div>
+        </div>
+    </div>
+
+
+<script>
+  var input, filter, table, tr, td, i,pos,inp;
+  pos = 2;
+  inp = 'kol1';
+  input = document.getElementById(inp);
+  filter = input.value.toUpperCase();
+  table = document.getElementById("tabela");
+	
+  tr = table.getElementsByTagName("tr");
+  for (i = 1; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[pos];
+    if (td) {
+      if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+
+function goAddr(narz,inp,inp2) {
+
+ input = document.getElementById(inp);
+ input2 = document.getElementById(inp2);
+ dzial=input.value;
+ wariant=input2.value;
+
+
+
+ url="http://jan-svr-intra01:8000/narzedziownia/szablony_lista/"+dzial+"/"+wariant+"/";
+ window.location.href = url;
+
+}
+</script>
+
+{% endblock body %}

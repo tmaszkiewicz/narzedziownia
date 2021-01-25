@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+{% extends 'narzedziownia/base.html' %}
+
+
+{% block body %}
+<script>
+var dz = [];
+var wa = [];
+</script>
+{%for i in dzialy%}
+<script>
+dz.push("{{i.dzial}}");
+</script>
+{%endfor%}
+{%for i in warianty%}
+<script>
+wa.push({
+    wariant: "{{i.wariant}}",
+    dzial: "{{i.dzial}}"
+});
+//wa.push("{{i.wariant}}");
+</script>
+{%endfor%}
+
+
+    <div>
+        <div class="container" align="center">
+            <div class="row">
+			
+		<table id="tabela" class="table table-sm" >
+		<tr>
+			<td>
+				<label class="control-label">Narzędzia dla Dzialu:</label>
+				<select onChange="initWariant()" id="dzial"  name="Dzial">
+				<option value={{dzial}} selected disabled hidden>{{dzial}}</option>
+				   {%for i in dzialy%}
+				    <option value="{{i.dzial}}">{{i.dzial}}</option>
+				   {%endfor%}
+				</select>
+			</td>
+			<td>
+				<label class="control-label">Wariant:</label>
+				
+				<select id="wariant"  name="Wariant">
+				<option value={{dzial}} selected disabled hidden>{{dzial}}</option>
+				</select>
+				<button onClick="goAddr('dzial','wariant')">DO SZABLONU</button>
+				
+			</td>
+		
+		</tr>
+		{% for n in Szablon %}
+		<tr>
+		<td>
+		{{ n.narzedzie}}</a>
+		</td>
+		<td>
+		{{ n.ilosc }}
+		</td>
+		<td style="display:none;">
+		{{n.dzial}}
+		</td>
+		<td>
+		<a href={% url 'narzedziownia:szablony_usun' n.pk dzial %}>X</a>
+		</td>
+		</tr>
+		{%endfor%}
+		<tr>
+		<td>
+		</td>
+		<td>	
+				<input type="text " id="wariant1"  name="Wariant">
+				<button onClick="goAddr('dzial','wariant1')">TWORZ NOWY</button>
+		</td>
+		</tr>
+
+		</table>
+		
+            </div>
+        </div>
+    </div>
+
+
+<script>
+try{
+	d = document.getElementById("dzial");
+
+} catch(error){
+	alert(error);
+}
+var sel_war=document.getElementById("wariant");
+while(sel_war.options.length > 0) {
+sel_war.remove(0);
+}
+for(i in wa){
+	if(wa[i].dzial==d.value){
+		//document.write(wa[i].dzial,d.value);
+		//document.write(wa[i].wariant);
+		var option = document.createElement("option");
+		option.text=wa[i].wariant;
+		sel_war.add(option);
+	}
+}
+  var input, filter, table, tr, td, i,pos,inp;
+  pos = 2;
+  inp = 'kol1';
+  input = document.getElementById(inp);
+  filter = input.value.toUpperCase();
+  table = document.getElementById("tabela");
+	
+  tr = table.getElementsByTagName("tr");
+  for (i = 1; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[pos];
+    if (td) {
+      if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+
+function goAddr(dzial,war) {
+
+dzial = document.getElementById(dzial);
+war = document.getElementById(war);
+
+url="http://jan-svr-intra01:8000/narzedziownia/szablony_lista/"+dzial.value+"/"+war.value+"/";
+ window.location.href = url;
+
+}
+
+function initWariant() {
+	//document.write(wa,dz);
+	try{
+		d = document.getElementById("dzial");
+	
+	} catch(error){
+		alert(error);
+	}
+	var sel_war=document.getElementById("wariant");
+	while(sel_war.options.length > 0) {
+	sel_war.remove(0);
+	}
+	for(i in wa){
+		if(wa[i].dzial==d.value){
+			//document.write(wa[i].dzial,d.value);
+			//document.write(wa[i].wariant);
+			var option = document.createElement("option");
+			option.text=wa[i].wariant;
+			sel_war.add(option);
+		}
+	}
+}
+</script>
+
+{% endblock body %}
