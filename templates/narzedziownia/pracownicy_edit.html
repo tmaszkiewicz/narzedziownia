@@ -92,6 +92,7 @@ wa.push({
 			
 			</th>
 			</tr>
+			<form name="checkboxy" method="GET" enctype="multipart/form-data" action="">
 			{%for i in Pobr_filter%}
 			<tr>
 			<td>
@@ -109,8 +110,21 @@ wa.push({
 			<td>
 			<a href='http://jan-svr-intra01:8000/narzedziownia/pracownicy_usun_pobranie/{{Prac.pk}}/{{i.pk}}/'>X</a>
 			</td>
+			<td>
+				<input type="checkbox" checked name={{i.pk}} id={{i.pk}}></input>
+			</td>
 			</tr>
 			{%endfor%}
+			<tr>
+			<td >
+			</td>
+			<td>
+			<input type="submit" value="Popraw"></input>	
+			</td>
+			<td>
+			</tr>
+			</form>
+			
 			</table>
 		</div>
 	</div>

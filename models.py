@@ -2,7 +2,17 @@
 from django.db import models
 from forms import forms
 from django.utils import timezone
+class Odziez(models.Model):
+    nazwa = models.CharField(max_length=30,blank=True,null=True)
+    opis = models.CharField(max_length=255,blank=True,null=False,default="") # previously null=True
+    def __str__(self):
+        return self.nazwa
+class OdziezForm(forms.ModelForm):
+    class Meta:
+        model = Odziez
+        fields = ['nazwa','opis']
 
+    
 class Narzedzie(models.Model):
     nazwa = models.CharField(max_length=30,blank=True,null=True)
     opis = models.CharField(max_length=255,blank=True,null=False,default="") # previously null=True
@@ -68,6 +78,17 @@ class Szablon(models.Model):
 class SzablonForm(forms.ModelForm):
     class Meta:
         model = Szablon
+        fields = '__all__'
+class SzablonOdziez(models.Model):
+    dzial = models.CharField(max_length=50)
+    wariant = models.CharField(max_length=50,default=".")
+    odziez = models.ForeignKey(Odziez,on_delete=None,blank=True)
+    ilosc = models.IntegerField(default=1)
+    def __str__(self):
+        return self.dzial+self.odziez.nazwa
+class SzablonOdziezForm(forms.ModelForm):
+    class Meta:
+        model = SzablonOdziez
         fields = '__all__'
 class Potwierdz(models.Model):
     prac=models.IntegerField(blank=True,null=True)

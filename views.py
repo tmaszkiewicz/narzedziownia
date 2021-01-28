@@ -68,8 +68,82 @@ def narzedzia_new(request, *args, **kwargs):
     context['var']=1
        #context['form']=form
     return render(request,url,context)
+
+#ODZIEZ
+def odziez_lista(request, *args, **kwargs):
+    context = {
+    }
+    if request.method == 'GET' and request.GET!={}:
+        pozostaja=request.GET
+        SzablonOdziez.objects.all().exclude(pk__in=pozostaja).delete()
+        for i in pozostaja:
+            print(i)
+            o=Odziez.objects.get(pk=i)
+            SzablonOdziez.objects.get_or_create(dzial=".",wariant=".",odziez=o,ilosc=1)
+
+
+        
+
+    url='narzedziownia/odziez_lista.html'
+    SzOdz=SzablonOdziez.objects.all()
+    Odz=Odziez.objects.all()
+    context['Odziez']=Odz
+    context['SzablonOdziez']=SzOdz
+    return render(request,url,context)
+def odziez_edit(request, *args, **kwargs):
+    print(request.POST)
+    context = {
+    }
+    url='narzedziownia/odziez_edit.html'
+    pk=kwargs['pk']
+    Odz=Odziez.objects.get(pk=pk)
+    if request.method == 'POST':
+        form = OdziezForm(request.POST,instance=Odz)
+        if form.is_valid():
+            Odz.nazwa=form.cleaned_data['nazwa']
+            Odz.opis=form.cleaned_data['opis']
+            Odz.save()
+            return HttpResponseRedirect("/narzedziownia/odziez_lista/")
+        else:
+            None
+    else:
+        form = OdziezForm()
+    context['form']=form
+    context['Odziez']=Odz
+       #context['form']=form
+    return render(request,url,context)
+def odziez_usun(request, *args, **kwargs):
+    pk=kwargs['pk']
+    Odziez.objects.get(pk=pk).delete()
+    return HttpResponseRedirect("/narzedziownia/odziez_lista/")
+def odziez_new(request, *args, **kwargs):
+    print(request.POST)
+    context = {
+    }
+    url='narzedziownia/odziez_new.html'
+    Odz=Odziez()
+    if request.method == 'POST':
+        form = OdziezForm(request.POST)
+        if form.is_valid():
+            print("ffff")
+            print(form.cleaned_data['nazwa'])
+
+            Odz.nazwa=form.cleaned_data['nazwa']
+            Odz.opis=form.cleaned_data['opis']
+            Odz.save()
+            return HttpResponseRedirect("/narzedziownia/odziez_lista/")
+        else:
+            None
+    else:
+        form = NarzedzieForm()
+    context['form']=form
+    context['Odziez']=Odz
+    context['var']=1
+       #context['form']=form
+    return render(request,url,context)
 #EMPLOYEE/PRACOWNICY
 
+#EMPLOYEE/PRACOWNICY
 def pracownicy_lista(request, *args, **kwargs):
     import MySQLdb
     #=== DODAJ ZATRUDNIENIA
@@ -201,6 +275,13 @@ def pracownicy_edit(request, *args, **kwargs):
     Lista_narz=Narzedzie.objects.all()
     narz_list=""
     Pobr=Pobranie()
+    # Add sth invisible, like pk in oder to avoid sending empty GET after submitting.
+    if request.method == 'GET' and request.GET!={}:
+        print(request.GET)
+        print("GET")
+        pozostaja=request.GET
+        Pobranie.objects.filter(pracownik=Prac).exclude(pk__in=pozostaja).delete()
+        return HttpResponseRedirect("/narzedziownia/pracownicy_edit/"+pk+"/")
     if request.method == 'POST':
 
         pk_narz=request.POST['narzedzie']

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+{% extends 'narzedziownia/base.html' %}
+
+{% block body %}
+    <div>
+        <div class="container">
+            <div class="row">
+			
+		<table id="tabela" class="table table-sm">
+
+		<tr>
+
+		<td>
+			<label class="control-label">ID</label>
+		</td>
+		<td>
+			<label class="control-label">nazwa</label>
+			<input class= type="text" id="kol1" onkeyup="myFilter(1,'kol1')" placeholder="Search for nazwa.." title="Filtruj nazwe">
+			<span class="glyphicon glyphicon-search"></span>
+		</td>
+
+
+		<td>
+			<label class="control-label">opis</label>
+			<input class= type="text" id="kol2" onkeyup="myFilter(2,'kol2')" placeholder="Search for Opis.." title="Type in a OPIS">
+			<span class="glyphicon glyphicon-search"></span>
+		</td>
+		<td>
+			<label class="control-label">USUN</label>
+			<span class="glyphicon glyphicon-search"></span>
+		</td>
+
+
+
+
+		</tr>
+		<tr>
+		<a href={% url 'narzedziownia:odziez_new'%}>DODAJ</a>
+		<form id="szablon" method="GET" action="">
+		</tr>
+		{% for n in Odziez %}
+		<tr>
+		<td>
+		{{n.pk}}
+		</td>
+		<td>
+		<a href={% url 'narzedziownia:odziez_edit' n.pk %}>{{ n.nazwa}}</a>
+		</td>
+		<td>
+		{{ n.opis }}
+		</td>
+		<td>
+		<a href={% url 'narzedziownia:odziez_usun' n.pk %}>x</a>
+		</td>
+		<td>
+
+		<input type="checkbox" id={{n.pk}} name={{n.pk}}></input>
+		{%for so  in SzablonOdziez  %}
+		{% if so.odziez.pk == n.pk %}
+		<script>
+		document.getElementById({{n.pk}}).checked = true;
+		</script>
+		{% endif %}
+		
+
+			
+		{%endfor%}
+
+
+		</td>
+		</tr>
+		{%endfor%}
+		<tr>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td align="right">
+		<input type="submit" value="Modyfikuj Szablon">
+		</td>
+		</tr>
+		</table>
+		
+		</form>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

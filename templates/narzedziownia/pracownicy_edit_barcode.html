@@ -27,7 +27,7 @@ wa.push({
 			<br><br>
 			<form name="wypozycz" id="wypozycz" method="POST" enctype="multipart/form-data" action="">
 			{% csrf_token %}
-			<input id="barcode" name="barcode" onKeyUp="wypozycz.submit()" type="text"></input>
+			<input id="barcode" name="barcode" onfocusout="barcode.focus()" onKeyUp="wypozycz.submit()" type="text"></input>
 				<br><br>
 			</form>
 		<br><br>
@@ -85,7 +85,7 @@ wa.push({
 			{{i.data_oddania}}
 			</td>
 			<td>
-			<a href='http://jan-svr-intra01:8000/narzedziownia/pracownicy_usun_pobranie/{{Prac.pk}}/{{i.pk}}/'>X</a>
+			<a href='http://jan-svr-intra01:8000/narzedziownia/pracownicy_usun_pobranie_barcode/{{Prac.pk}}/{{i.pk}}/'>X</a>
 			</td>
 			</tr>
 			{%endfor%}
