@@ -2,6 +2,7 @@
 from django.db import models
 from forms import forms
 from django.utils import timezone
+from jsignature.fields import JSignatureField
 class Odziez(models.Model):
     nazwa = models.CharField(max_length=30,blank=True,null=True)
     opis = models.CharField(max_length=255,blank=True,null=False,default="") # previously null=True
@@ -61,6 +62,7 @@ class Pobranie(models.Model):
     data_oddania=models.DateField(blank=True,null=True)
     signature=models.BinaryField(blank=True,null=True)
     sgn=models.CharField(max_length=100,blank=True,null=True)
+    signature_handy=JSignatureField(null=True,blank=True)
 
 class PobranieForm(forms.ModelForm):
     class Meta:
@@ -68,6 +70,20 @@ class PobranieForm(forms.ModelForm):
         fields = '__all__'
         #def __init__(self, *args, **kwargs):
         #    self.fields['narzedzie'].queryset = Narzedzie.objects.none()
+class PobranieOdziez(models.Model):
+    pracownik = models.ForeignKey(Pracownik,on_delete=None,blank=True)
+    odziez = models.ForeignKey(Odziez,on_delete=None,blank=True)
+    ilosc = models.IntegerField(default=1)
+    data_pobrania=models.DateField(blank=True,null=True,default=timezone.now())
+    data_oddania=models.DateField(blank=True,null=True)
+    signature=models.BinaryField(blank=True,null=True)
+    sgn=models.CharField(max_length=100,blank=True,null=True)
+
+class PobranieOdziezForm(forms.ModelForm):
+    class Meta:
+        model = Pobranie
+        fields = '__all__'
+
 class Szablon(models.Model):
     dzial = models.CharField(max_length=50)
     wariant = models.CharField(max_length=50,default=".")
@@ -95,5 +111,6 @@ class Potwierdz(models.Model):
     def __str__(self):
         return str(self.prac)
 
-    
+class SignatureModel(models.Model):
+    signature = JSignatureField() 
 

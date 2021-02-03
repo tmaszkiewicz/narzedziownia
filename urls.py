@@ -43,5 +43,6 @@ urlpatterns = [
     url(r'^login/$', views.login,name="login"),
     url(r'^awaiting/$', views.awaiting,name="awaiting"),
     url(r'^confirmed/$', views.confirmed,name="confirmed"),
+    url(r'^sign_test/$', views.sign_test,name="sign_test"),
 
 ]

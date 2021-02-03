@@ -3,6 +3,8 @@ from .models import *
 from .forms import loginForm,PracownikFormConf
 from django.http import HttpResponseRedirect
 from .functions  import aes_it,deaes_it
+from .forms import SignatureForm
+from jsignature.utils import draw_signature
 #import pymysql.cursors
 #from django.http import httpresponse
 
@@ -283,24 +285,67 @@ def pracownicy_edit(request, *args, **kwargs):
         Pobranie.objects.filter(pracownik=Prac).exclude(pk__in=pozostaja).delete()
         return HttpResponseRedirect("/narzedziownia/pracownicy_edit/"+pk+"/")
     if request.method == 'POST':
+        try:
+            pk_narz=request.POST['narzedzie']
+            Pobr.pracownik=Prac
+            Pobr.narzedzie=Narzedzie.objects.get(pk=pk_narz)
+            Pobr.ilosc=request.POST['ilosc']
+            if request.POST['data_pobrania']!="":
+                Pobr.data_pobrania=request.POST['data_pobrania']
+            if request.POST['data_oddania']!="":
+                Pobr.data_oddania=request.POST['data_oddania']
+            Pobr.save()
+            return HttpResponseRedirect("/narzedziownia/pracownicy_edit/"+pk+"/")
+        except:
+            try:
+                ##nie dizala exclude!!!!!
+                l=list(request.POST.keys())
+                l2=[]
+                for i in l:
+                    try:
+                        k=int(i)
+                        l2.append(k)
+                    except Exception as a:
+                        print(a)
+                PobranieOdziez.objects.filter(pracownik=Prac).exclude(odziez__pk__in=l2).delete()
+                #Nie dziala exclude
+            except Exception as a:
+                print(a)
+            for k in request.POST.keys():
+                try:
+                    
+                    Od=Odziez.objects.get(pk=k)
 
-        pk_narz=request.POST['narzedzie']
-        Pobr.pracownik=Prac
-        Pobr.narzedzie=Narzedzie.objects.get(pk=pk_narz)
-        Pobr.ilosc=request.POST['ilosc']
-        if request.POST['data_pobrania']!="":
-            Pobr.data_pobrania=request.POST['data_pobrania']
-        if request.POST['data_oddania']!="":
-            print("sssss")
-            Pobr.data_oddania=request.POST['data_oddania']
-        Pobr.save()
-        return HttpResponseRedirect("/narzedziownia/pracownicy_edit/"+pk+"/")
+                    PobranieOdziez.objects.get_or_create(odziez=Od,pracownik=Prac,ilosc=1)
+                except Exception as a:
+                    print(a)
+                #print(Odz)
+
+            #print(odziez)
+            #for odz in odziez:
+            #    print("MODAL")
+            #    print(odz)
+            form = PobranieForm() #Może jakoś mądzej obejsc ten problem????
         #else:
         #    None
     else:
         form = PobranieForm()
         #form =PracownikForm()a
     Pobr_filter=Pobranie.objects.filter(pracownik=pk)
+    Odz = list(SzablonOdziez.objects.values())
+    for o in Odz:
+        n=Odziez.objects.get(pk=o['odziez_id']).nazwa
+
+        #n=o.Odziez.nazwa
+        o['nazwa']=n
+        pk_odziez=o['odziez_id']
+        if PobranieOdziez.objects.filter(pracownik=pk,odziez__pk=pk_odziez):
+            o['checked']=True
+        else:
+            o['checked']=False
+    print(Odz)
+
+    context['Odziez']=Odz
     context['Pobr_filter']=Pobr_filter
     context['form']=form
     context['Prac']=Prac
@@ -331,8 +376,11 @@ def pracownicy_view(request, *args, **kwargs):
             print(aes_it(form.cleaned_data['potwierdzenie']))
             for p in Pobr_filter:
                 p.signature=aes_it(form.cleaned_data['potwierdzenie'])
+                p.signature2=form.cleaned_data['signature']
                 p.save()
             Prac.save()
+            for p in Pobr_filter:
+                print(p.signature2)
             return HttpResponseRedirect("/narzedziownia/confirmed/")
         else:
             None
@@ -621,3 +669,35 @@ def login(request, *args, **kwargs):
     context['pk']=pk
     context['form']=form
     return render(request,url,context)
+#def signature(request):
+#    assert isinstance(request, HttpRequest)
+#    url = 'narzedziownia/sign_test.html'
+#    context = {
+#        'title':'About',
+#        'message':'Your application description page.',
+#        #'year':datetime.now().year,
+#    }
+#    return render(request,url,context)
+def sign_test(request, *args, **kwargs):
+    url= 'narzedziownia/sign_test.html'
+    context={
+    }
+
+    form = SignatureForm(request.POST or None)
+
+    if form.is_valid():
+
+        signature = form.cleaned_data.get('signature')
+        print(signature)
+
+        if signature:
+
+            #as an image
+
+            signature_picture = draw_signature(signature)
+
+            #or as a file
+
+            signature_file_path = draw_signature(signature, as_file=True)
+    context['form']=form
+    return render(request,url, context)
