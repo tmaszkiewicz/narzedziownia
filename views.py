@@ -370,18 +370,28 @@ def pracownicy_view(request, *args, **kwargs):
     Pobr=Pobranie()
     Pobr_filter=Pobranie.objects.filter(pracownik=pk)
     if request.method == 'GET':
+        form_s = SignatureForm(request.GET)
         form = PracownikFormConf(request.GET)
         if form.is_valid():
             print(form.cleaned_data['potwierdzenie'])
             print(aes_it(form.cleaned_data['potwierdzenie']))
             for p in Pobr_filter:
                 p.signature=aes_it(form.cleaned_data['potwierdzenie'])
-                p.signature2=form.cleaned_data['signature']
                 p.save()
-            Prac.save()
+            #Prac.save()
             for p in Pobr_filter:
-                print(p.signature2)
+                print(p.signature)
             return HttpResponseRedirect("/narzedziownia/confirmed/")
+        elif form_s.is_valid():
+            for p in Pobr_filter:
+                if p.signature_handy == None:
+                    p.signature_handy=form_s.cleaned_data['signature']
+                    p.save()
+            #Prac.save()
+            for p in Pobr_filter:
+                print(p.signature_handy)
+            return HttpResponseRedirect("/narzedziownia/confirmed/")
+
         else:
             None
     else:
@@ -392,7 +402,7 @@ def pracownicy_view(request, *args, **kwargs):
             print(deaes_it(b))
         except:
             None
-
+    context['form_s']=form_s
     context['form']=form
     context['Prac']=Prac
     Pobr_filter_kol1=Pobranie.objects.filter(pracownik=pk)[:9]

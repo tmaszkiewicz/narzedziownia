@@ -35,13 +35,18 @@
 			  </ul>
 			<center>
 			<a>POTWIERDZAM LISTĘ UŻYTKOWANYCH NARZĘDZI</a>
-			{{form.media}}
 			<form name="prac" method="GET" enctype="multipart/form-data" action="">
 				{% csrf_token %}
 				{{form.potwierdzenie}}
-				{{form.signature}}
+			</form>
+	
+			{{form_s.media}}
+			<form name="prac" method="GET" enctype="multipart/form-data" action="">
+				{% csrf_token %}
+				{{form_s.signature}}
 			<input class="button" type="submit" value="SIGN"/>
 			</form>
+			
 				
 			<center>
 			

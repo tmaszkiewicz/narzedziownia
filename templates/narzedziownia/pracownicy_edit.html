@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% extends 'narzedziownia/base.html' %}
-
+{% load jsignature_filters %}
 {% load staticfiles %}
 {% block css%}
 <style>
@@ -150,11 +150,15 @@ wa.push({
 			<td>
 			{{i.data_oddania}}
 			</td>
+
 			<td>
 			<a href='http://jan-svr-intra01:8000/narzedziownia/pracownicy_usun_pobranie/{{Prac.pk}}/{{i.pk}}/'>X</a>
 			</td>
 			<td>
 				<input type="checkbox" checked name={{i.pk}} id={{i.pk}}></input>
+			</td>
+			<td>
+				<img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
 			</td>
 			</tr>
 			{%endfor%}

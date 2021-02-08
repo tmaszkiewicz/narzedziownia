@@ -2,6 +2,8 @@
 {% extends 'narzedziownia/base.html' %}
 
 {% load staticfiles %}
+{% load jsignature_filters %}
+
 {% block body %}
 <script>
 var dz = [];
@@ -87,6 +89,10 @@ wa.push({
 			<td>
 			<a href='http://jan-svr-intra01:8000/narzedziownia/pracownicy_usun_pobranie_barcode/{{Prac.pk}}/{{i.pk}}/'>X</a>
 			</td>
+			<td>
+
+                        	<img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
+     			</td>
 			</tr>
 			{%endfor%}
 			</table>
