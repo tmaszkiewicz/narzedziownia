@@ -1,16 +1,19 @@
 from django.shortcuts import render
 from .models import *
-from .forms import loginForm,PracownikFormConf
-from django.http import HttpResponseRedirect
+from .forms import loginForm,PracownikFormConf,LoginForm2
+from django.http import HttpResponseRedirect,HttpResponse
 from .functions  import aes_it,deaes_it
 from .forms import SignatureForm
 from jsignature.utils import draw_signature
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
 #import pymysql.cursors
 #from django.http import httpresponse
 
 def start(request):
     return None
 #NARZEDZIA
+@login_required(login_url='/narzedziownia/login2/')
 def narzedzia_lista(request, *args, **kwargs):
     context = {
     }
@@ -19,6 +22,7 @@ def narzedzia_lista(request, *args, **kwargs):
     print(Narzedzia)
     context['Narzedzia']=Narzedzia   
     return render(request,url,context)
+@login_required(login_url='/narzedziownia/login2/')
 def narzedzia_edit(request, *args, **kwargs):
     print(request.POST)
     context = {
@@ -72,6 +76,7 @@ def narzedzia_new(request, *args, **kwargs):
     return render(request,url,context)
 
 #ODZIEZ
+@login_required(login_url='/narzedziownia/login2/')
 def odziez_lista(request, *args, **kwargs):
     context = {
     }
@@ -92,6 +97,7 @@ def odziez_lista(request, *args, **kwargs):
     context['Odziez']=Odz
     context['SzablonOdziez']=SzOdz
     return render(request,url,context)
+@login_required(login_url='/narzedziownia/login2/')
 def odziez_edit(request, *args, **kwargs):
     print(request.POST)
     context = {
@@ -146,6 +152,9 @@ def odziez_new(request, *args, **kwargs):
 #EMPLOYEE/PRACOWNICY
 
 #EMPLOYEE/PRACOWNICY
+#@login_required
+
+@login_required(login_url='/narzedziownia/login2/') 
 def pracownicy_lista(request, *args, **kwargs):
     import MySQLdb
     #=== DODAJ ZATRUDNIENIA
@@ -182,10 +191,49 @@ def pracownicy_lista(request, *args, **kwargs):
     context = {
     }
     url='narzedziownia/pracownicy_lista.html'
-    Pracownicy=Pracownik.objects.all()
+    Pracownicy=Pracownik.objects.filter(zwolniony=False)
     context['Pracownicy']=Pracownicy
     return render(request,url,context)
 
+def pracownicy_lista_zwolnionych(request, *args, **kwargs):
+    import MySQLdb
+    #=== DODAJ ZATRUDNIENIA
+    try:
+        conn=MySQLdb.connect(host="192.168.41.15",user="kadry", passwd="start", db="KADRY",port=3306,charset='utf8')
+        cur = conn.cursor()
+        sql = "SELECT * FROM Nowi_pracownicy" 
+        cur.execute(sql)
+        rows=cur.fetchall()
+    except mdb.Error:
+        print("ERROR")
+        #print "Error %d: %s" % (e.args[0],e.args[1])
+        sys.exit(1)
+    finally:
+        if conn:
+            conn.close()
+    for i in rows:
+        Prac, created=Pracownik.objects.get_or_create(nazwisko_imie="{} {}".format(i[2],i[1]),dzial="{}".format(i[3]).upper(),stanowisko="{}".format(i[4]))
+
+        #Prac=Pracownik()
+        #Prac.nazwisko_imie="{} {}".format(i[2],i[1])
+        #Prac.dzial="{}".format(i[3])
+        #Prac.stanowisko="{}".format(i[4])
+        #Prac.save()
+        
+        #print(i[0])
+        #print(i[1])
+        #print(i[2])
+        #print(i[3])
+        #print(i[4])
+        
+        
+
+    context = {
+    }
+    url='narzedziownia/pracownicy_lista_zwolnionych.html'
+    Pracownicy=Pracownik.objects.filter(zwolniony=True)
+    context['Pracownicy']=Pracownicy
+    return render(request,url,context)
 def pracownicy_edit_(request, *args, **kwargs):
     from collections import OrderedDict
     context = {
@@ -262,7 +310,9 @@ def pracownicy_usun_pobranie_barcode(request, *args, **kwargs):
     Pobr=Pobranie.objects.filter(pk=pk_pobr).delete()
     return HttpResponseRedirect("/narzedziownia/pracownicy_edit_barcode/"+pk_prac+"/")
 
+@login_required(login_url='/narzedziownia/login2/')
 def pracownicy_edit(request, *args, **kwargs):
+    from datetime import datetime
     context = {
     }
     dzialy = Pracownik.objects.values('dzial').distinct()
@@ -272,34 +322,52 @@ def pracownicy_edit(request, *args, **kwargs):
     pk=kwargs['pk']
     #print(kwargs)
     Prac=Pracownik.objects.get(pk=pk)
+    if Prac.zwolniony == True:
+        return HttpResponseRedirect("/narzedziownia/zwolniony_alert/")
     Narz_temp_str=Prac.narzedzia
 
     Lista_narz=Narzedzie.objects.all()
     narz_list=""
     Pobr=Pobranie()
     # Add sth invisible, like pk in oder to avoid sending empty GET after submitting.
+    pozostaja=[]
     if request.method == 'GET' and request.GET!={}:
-        print(request.GET)
-        print("GET")
-        pozostaja=request.GET
+        for i in request.GET:
+            if i.startswith("opis"):
+                p = Pobranie.objects.get(pk=i[4:])
+                p.opis=request.GET[i]
+                p.save()
+            elif i.startswith("data"):
+                p = Pobranie.objects.get(pk=i[4:])
+                p.data_pobrania=request.GET[i]
+                p.save()
+
+            else:
+                pozostaja.append(i)
+
         Pobranie.objects.filter(pracownik=Prac).exclude(pk__in=pozostaja).delete()
         return HttpResponseRedirect("/narzedziownia/pracownicy_edit/"+pk+"/")
     if request.method == 'POST':
+        #print(request.POST['opis'])
         try:
             pk_narz=request.POST['narzedzie']
             Pobr.pracownik=Prac
             Pobr.narzedzie=Narzedzie.objects.get(pk=pk_narz)
+            Pobr.opis=request.POST['opis']
             Pobr.ilosc=request.POST['ilosc']
             if request.POST['data_pobrania']!="":
                 Pobr.data_pobrania=request.POST['data_pobrania']
-            if request.POST['data_oddania']!="":
-                Pobr.data_oddania=request.POST['data_oddania']
+
+            ### USUNIETA DATA ODDANIA
+            #if request.POST['data_oddania']!="" and  request.POST['data_oddania']!=None:
+            #    Pobr.data_oddania=request.POST['data_oddania']
             Pobr.save()
             return HttpResponseRedirect("/narzedziownia/pracownicy_edit/"+pk+"/")
         except:
+            ## USUWAMY TYLKO TYCH KTORYCH NIE MA
             try:
-                ##nie dizala exclude!!!!!
                 l=list(request.POST.keys())
+                l=list(filter(lambda x:not x.startswith(("d","n")) ,l))
                 l2=[]
                 for i in l:
                     try:
@@ -311,14 +379,60 @@ def pracownicy_edit(request, *args, **kwargs):
                 #Nie dziala exclude
             except Exception as a:
                 print(a)
-            for k in request.POST.keys():
+            ## DODAJEMY TYCH KTORYCH NIE MA....
+
+            l=list(request.POST.keys())
+            lc=list(filter(lambda x:not x.startswith(("d","n")) ,l))
+            ld=list(filter(lambda x:x.startswith("d") ,l)) ####DATY 
+            ln=list(filter(lambda x:x.startswith("n") ,l)) ####Ilosci
+            for k in lc:
                 try:
                     
                     Od=Odziez.objects.get(pk=k)
 
-                    PobranieOdziez.objects.get_or_create(odziez=Od,pracownik=Prac,ilosc=1)
+                    P=PobranieOdziez.objects.get_or_create(odziez=Od,pracownik=Prac)
+                    
+                    #P.data_pobrania=
+                    
                 except Exception as a:
                     print(a)
+            #UZUPENILAJ DATY
+            for k in ld:
+                p=k[1:]
+                
+                O=Odziez.objects.get(pk=p)
+                #print(O)
+                #print(Od)
+                try:
+                    P=PobranieOdziez.objects.get(odziez=O,pracownik=Prac)
+                    P.data_pobrania=request.POST[k]
+                    P.save()
+                except:
+                    None
+            #UZUPELNIAJ ILOSCI
+            for k in ln:
+                p=k[1:]
+            #    
+                O=Odziez.objects.get(pk=p)
+                print(O)
+                #print(Od)
+                try:
+                    P=PobranieOdziez.objects.get(odziez=O,pracownik=Prac)
+                    P.ilosc=request.POST[k]
+                    P.save()
+                except:
+                    None
+
+
+            #    data_pobrania= request.POST[k]
+           #:     print("aaaaaaaa",pk)
+                #P=PobranieOdziez.objects.get(pk=int(pk))
+                #P.data_pobrania=data_pobrania
+                #P.save()
+
+
+
+
                 #print(Odz)
 
             #print(odziez)
@@ -332,7 +446,8 @@ def pracownicy_edit(request, *args, **kwargs):
         form = PobranieForm()
         #form =PracownikForm()a
     Pobr_filter=Pobranie.objects.filter(pracownik=pk)
-    Odz = list(SzablonOdziez.objects.values())
+    Odz = list(SzablonOdziez.objects.order_by('odziez__nazwa').values())
+    #Odz = list(SzablonOdziez.objects.values()) # Powyzej zmiania z 22-03-2021 sort ubran w modalu
     for o in Odz:
         n=Odziez.objects.get(pk=o['odziez_id']).nazwa
 
@@ -341,10 +456,14 @@ def pracownicy_edit(request, *args, **kwargs):
         pk_odziez=o['odziez_id']
         if PobranieOdziez.objects.filter(pracownik=pk,odziez__pk=pk_odziez):
             o['checked']=True
+            o['data_pobrania']=PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).data_pobrania
+            o['ilosc']=PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).ilosc
         else:
             o['checked']=False
-    print(Odz)
-
+            #o['data_pobrania']=PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).data_pobrania
+    #print(Odz)
+    PobranieO = PobranieOdziez.objects.filter(pracownik=Prac)
+    context['PobranieOdziez']=PobranieO
     context['Odziez']=Odz
     context['Pobr_filter']=Pobr_filter
     context['form']=form
@@ -353,9 +472,11 @@ def pracownicy_edit(request, *args, **kwargs):
     context['dzialy']=dzialy
     context['warianty']=warianty
        #context['form']=forma
+    
     return render(request,url,context)
 
 def pracownicy_view(request, *args, **kwargs):
+    from datetime import datetime
     context = {
     }
     url='narzedziownia/pracownicy_view.html'
@@ -369,24 +490,36 @@ def pracownicy_view(request, *args, **kwargs):
     narz_list=""
     Pobr=Pobranie()
     Pobr_filter=Pobranie.objects.filter(pracownik=pk)
+    PobrOdziez_filter=PobranieOdziez.objects.filter(pracownik=pk)
     if request.method == 'GET':
         form_s = SignatureForm(request.GET)
         form = PracownikFormConf(request.GET)
         if form.is_valid():
             print(form.cleaned_data['potwierdzenie'])
-            print(aes_it(form.cleaned_data['potwierdzenie']))
+            #print(aes_it(form.cleaned_data['potwierdzenie']))
+         
+            sgn=form.cleaned_data['potwierdzenie'] +datetime.now().strftime("%d:%m:%Y:%H:%M:%S")
+            print(sgn)
             for p in Pobr_filter:
-                p.signature=aes_it(form.cleaned_data['potwierdzenie'])
+                p.signature=aes_it(sgn)
                 p.save()
+            for po in PobrOdziez_filter:
+                po.signature=aes_it(sgn)
+                po.save()
             #Prac.save()
-            for p in Pobr_filter:
-                print(p.signature)
+            #for p in Pobr_filter:
+            #    print(p.signature)
             return HttpResponseRedirect("/narzedziownia/confirmed/")
         elif form_s.is_valid():
             for p in Pobr_filter:
                 if p.signature_handy == None:
                     p.signature_handy=form_s.cleaned_data['signature']
                     p.save()
+            ##Poprawka 02-03-2021
+            for po in PobrOdziez_filter:
+                if po.signature_handy == None:
+                    po.signature_handy=form_s.cleaned_data['signature']
+                    po.save()
             #Prac.save()
             for p in Pobr_filter:
                 print(p.signature_handy)
@@ -406,14 +539,15 @@ def pracownicy_view(request, *args, **kwargs):
     context['form']=form
     context['Prac']=Prac
     Pobr_filter_kol1=Pobranie.objects.filter(pracownik=pk)[:9]
-    Pobr_filter_kol2=Pobranie.objects.filter(pracownik=pk)[10:19]
-    Pobr_filter_kol3=Pobranie.objects.filter(pracownik=pk)[20:]
-        
+    Pobr_filter_kol2=Pobranie.objects.filter(pracownik=pk)[9:19]
+    Pobr_filter_kol3=Pobranie.objects.filter(pracownik=pk)[19:]
+    context['PobrOdziez_filter']=PobrOdziez_filter
     context['Pobr_filter']=Pobr_filter
     context['Pobr_filter_kol1']=Pobr_filter_kol1
     context['Pobr_filter_kol2']=Pobr_filter_kol2
     context['Pobr_filter_kol3']=Pobr_filter_kol3
     return render(request,url,context)
+@login_required(login_url='/narzedziownia/login2/')
 def pracownicy_edit_barcode(request, *args, **kwargs):
     from datetime import date
     context = {
@@ -509,6 +643,16 @@ def pracownicy_view_(request, *args, **kwargs):
        #context['form']=form
     return render(request,url,context)
 
+def pracownicy_arch(request, *args, **kwargs):
+    prac=kwargs['pk']
+    p=Pracownik.objects.get(pk=prac)
+    p.zwolniony=True
+    p.save()
+
+    
+    
+
+    return HttpResponseRedirect("/narzedziownia/pracownicy_lista/")
 def import_pracownikow(request, *args, **kwargs):
     from openpyxl import load_workbook
     from openpyxl.utils import get_column_letter
@@ -534,7 +678,7 @@ def import_pracownikow(request, *args, **kwargs):
         cell_src_8 = sheet_src.cell(row = i, column = 8) #TypUmowy
         cell_src_9 = sheet_src.cell(row = i, column = 9) #Karta
         try:
-            p, created=Pracownik.objects.get_or_create(nr_pracownika=cell_src_1.value)
+            p=Pracownik.objects.get(nr_pracownika=cell_src_1.value)
             p.nr_pracownika=cell_src_1.value
             p.nazwisko_imie=cell_src_2.value
             p.dzial=cell_src_3.value
@@ -547,16 +691,38 @@ def import_pracownikow(request, *args, **kwargs):
             p.save()
             rows.append(p)
         except:
+            try:
+                p,created=Pracownik.objects.get_or_create(nazwisko_imie=cell_src_2.value)
+                p.nr_pracownika=cell_src_1.value
+                p.nazwisko_imie=cell_src_2.value
+                p.dzial=cell_src_3.value
+                p.stanowisko=cell_src_4.value
+                p.zatrudnienie=cell_src_5.value
+                p.spot=cell_src_6.value
+                p.podgrupa_prac=cell_src_7.value
+                p.typ_umowy=cell_src_8.value
+                p.nr_karty=int(cell_src_9.value)
+                p.save()
+                rows.append(p)
+            except:
+                print(cell_src_2.value)
+        finally:
+            
             None
+
+        #    None
     context['rows']=rows
     return render(request,url,context)
 def pracownicy_szablon(request, *args, **kwargs):
+    from django.db.models import Q
     pk_prac = kwargs['pk_prac']
     Prac=Pracownik.objects.get(pk=pk_prac)
     dzial = kwargs['dzial']
     wariant = kwargs['wariant']
+    wariant_=wariant+" "
     #Dzial=Prac.dzial
-    for s in Szablon.objects.filter(dzial=dzial,wariant=wariant):
+    #for s in Szablon.objects.filter(dzial=dzial,wariant__iregex=wariant_r):
+    for s in Szablon.objects.filter(Q(dzial=dzial,wariant=wariant)|Q(dzial=dzial,wariant=wariant_)):
         Pobr =  Pobranie()
         Pobr.ilosc=s.ilosc
         Pobr.narzedzie = s.narzedzie
@@ -567,6 +733,7 @@ def pracownicy_szablon(request, *args, **kwargs):
     return HttpResponseRedirect("/narzedziownia/pracownicy_edit/"+pk_prac+"/")
 #========================================
 #SZABLONY
+@login_required(login_url='/narzedziownia/login2/')
 def szablony_wybor(request, *args, **kwargs):
     context = {
     }
@@ -579,13 +746,18 @@ def szablony_wybor(request, *args, **kwargs):
     context['warianty']=warianty
     return render(request,url,context)
     
+@login_required(login_url='/narzedziownia/login2/')
 def szablony_lista(request, *args, **kwargs):
+    from django.db.models import Q
     context = {
     }
+    popraw=False
     dzial=kwargs['dzial']
     wariant=kwargs['wariant']
+    wariant_=wariant+" "
     url='narzedziownia/szablony_lista.html'
-    Szabl = Szablon.objects.filter(dzial=dzial,wariant=wariant)
+
+    Szabl = Szablon.objects.filter(Q(dzial=dzial,wariant=wariant)|Q(dzial=dzial,wariant=wariant_))
     Warianty=Szablon.objects.filter(dzial=dzial).values('wariant').distinct()
     dzialy = Pracownik.objects.values('dzial').distinct()
     context['dzial']=dzial
@@ -594,16 +766,21 @@ def szablony_lista(request, *args, **kwargs):
     context['Warianty']=Warianty
     context['dzialy']=dzialy
     if request.method == 'POST':
-        Szabl=Szablon()
-        Szabl.dzial=dzial
-        Szabl.narzedzie=Narzedzie.objects.get(pk=request.POST['narzedzie'])
-        Szabl.ilosc=request.POST['ilosc']
-        Szabl.wariant = wariant
-        Szabl.save()
+        if request.POST['narzedzie']!="--------" and request.POST['narzedzie']!="":
+            Szabl=Szablon()
+            Szabl.dzial=dzial
+            Szabl.narzedzie=Narzedzie.objects.get(pk=request.POST['narzedzie'])
+            Szabl.ilosc=request.POST['ilosc']
+            Szabl.wariant = wariant
+            Szabl.save()
+        else:
+            popraw=True
     else:
-        form = SzablonForm()
+        None
+    form = SzablonForm()
         
-        context['form']=form
+    context['form']=form
+    context['popraw']=popraw
 
 
 
@@ -657,7 +834,8 @@ def confirmed(request, *args, **kwargs):
 
 
     
-def login(request, *args, **kwargs):
+@login_required(login_url='/narzedziownia/login2/')
+def login1(request, *args, **kwargs):
     context={
     }
     kwargs={
@@ -675,7 +853,7 @@ def login(request, *args, **kwargs):
                 
             kwargs['pk']=pk
             #pracownicy_edit(request,*args,**kwargs)
-            return HttpResponseRedirect("/narzedziownia/pracownicy_view/"+str(pk)+"/")
+            return HttpResponseRedirect("/narzedziownia/pracownicy_edit/"+str(pk)+"/")
     context['pk']=pk
     context['form']=form
     return render(request,url,context)
@@ -688,6 +866,53 @@ def login(request, *args, **kwargs):
 #        #'year':datetime.now().year,
 #    }
 #    return render(request,url,context)
+def login2(request, *args, **kwargs):
+    context = {
+    }
+    url='narzedziownia/login2.html'
+    if request.method == 'POST':
+        form = LoginForm2(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            user = data['user']
+            password = data['password']
+            user_check = authenticate(username=user, password=password)
+            if user_check:
+                if user_check.is_authenticated:
+                    login(request, user_check)
+                    #return render(request,url,context)
+                    return HttpResponseRedirect('/narzedziownia/pracownicy_lista/')
+                    #HttpResponseRedirect('narzedziownia/pracownicy_lista/')
+            else:
+                form = LoginForm2()
+                context['form']=form
+            
+                return render(request,url,context)        
+    else:
+        None
+        form = LoginForm2()
+    context['form']=form
+    return render(request,url,context)
+
+
+def logout2(request):
+    logout(request)
+    return HttpResponseRedirect('/narzedziownia/login2')
+
+#                return render(request, 'registration/login.html', {'form': form, 'error': 'Logowanie nie poprawne'})
+#    return render(request, 'registration/login.html', {'form': form, 'error': 'Logowanie nie poprawne'})
+
+
+
+#    if request.method == 'POST':
+#        r=request.user
+#        if request.user.is_authenticated():
+#    #        print("ffff")
+#            return HttpResponseRedirect('/narzedziownia/pracownicy_lista/')
+#        else:
+#            print("vvvvv")
+#        context['r']=r
+
 def sign_test(request, *args, **kwargs):
     url= 'narzedziownia/sign_test.html'
     context={
@@ -711,3 +936,67 @@ def sign_test(request, *args, **kwargs):
             signature_file_path = draw_signature(signature, as_file=True)
     context['form']=form
     return render(request,url, context)
+def canvas(request):
+    url='narzedziownia/canvas.html'
+    context = {
+    }
+    return render(request,url,context)
+def przelicz(request,*args, **kwargs):
+    from django.db.models import Sum
+    pk_prac=kwargs['pk_prac']
+    edit=kwargs['edit']
+    print(edit)
+
+    for i in Pobranie.objects.filter(pracownik=pk_prac).distinct('narzedzie','data_pobrania'):    #usunac data
+        ilosc = Pobranie.objects.filter(pracownik=pk_prac,narzedzie=i.narzedzie,data_pobrania=i.data_pobrania).aggregate(Sum('ilosc')) #usunac data
+        p = Pobranie.objects.filter(pracownik=pk_prac,narzedzie=i.narzedzie,data_pobrania=i.data_pobrania) #usunac data
+        for k in p:
+            k.ilosc=ilosc['ilosc__sum']
+            k.save()
+        
+
+    for i in Pobranie.objects.filter(pracownik=pk_prac):
+        if Pobranie.objects.filter(pracownik=pk_prac,narzedzie=i.narzedzie,data_pobrania=i.data_pobrania).count()>1: #usunac data
+            i.delete()
+    print(request)
+    if edit==0:
+        return HttpResponseRedirect("/narzedziownia/pracownicy_edit/"+pk_prac+"/") ###DOROBIC przekierowanie na barcode
+    else:
+    
+        return HttpResponseRedirect("/narzedziownia/pracownicy_edit_barcode/"+pk_prac+"/") ###DOROBIC przekierowanie na barcode
+
+
+def pdf_odziez(request,*args, **kwargs):
+    # -*- coding: utf-8 -*-
+    from reportlab.graphics.barcode import qr, eanbc
+    from reportlab.graphics.shapes import Drawing
+    from reportlab.lib.units import cm
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.pdfgen import canvas
+    from reportlab.graphics import renderPDF
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+
+    # Praca z PDF
+    prac=kwargs['prac']
+    #from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
+
+    pdf_file = 'pdf_odziez.pdf'
+     
+    can = canvas.Canvas(pdf_file)
+    pdfmetrics.registerFont(TTFont('AlegreyaSC', 'apps/narzedziownia/static/narzedziownia/fonts/Alegreya_SC/AlegreyaSC-Bold.ttf'))
+
+    row=1
+    for i in PobranieOdziez.objects.filter(pracownik__pk=prac):
+        print(can.getAvailableFonts())
+        can.setFont("AlegreyaSC",16)
+        can.drawString(2*cm , 29*cm - row*cm, i.odziez.nazwa)
+        can.drawString(10*cm , 29*cm - row*cm, str(i.ilosc))
+        can.drawString(15*cm , 29*cm - row*cm, str(i.data_pobrania))
+        row+=1
+    can.showPage()
+    can.save()
+
+    return HttpResponse("fff")
+def zwolniony_alert(request):
+    return HttpResponse("ZWOLNIONY")

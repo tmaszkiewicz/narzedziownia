@@ -23,9 +23,17 @@
 <div id="tabs">
 <ul>
   <li class="current"><a href="{% url 'narzedziownia:pracownicy_lista'%}"><span>Pracownicy</span></a></li>
+
+  <li class="current"><a href="{% url 'narzedziownia:login1'%}"><span>Wybór kartą</span></a></li>
   <li><a href="{% url 'narzedziownia:narzedzia_lista'%}"><span>Narzedzia</span></a></li>
   <li><a href="/narzedziownia/szablony_wybor/" ><span>Szablony pobran</span></a></li>
   <li><a href="{% url 'narzedziownia:odziez_lista' %}" ><span>Odziez</span></a></li>
+   {% if user.is_authenticated %}
+     <li><a href='/narzedziownia/logout2'?next={{request.path}}"><span>Logout: {{user.get_username}}</span></a></li>
+   {% else %}
+     <li><a href='/narzedziownia/login2'??next={{request.path}}"><span>Login</span></a></li>
+   {% endif %} 
+
 </ul>
 </div>
 <br><br><br>
@@ -44,7 +52,7 @@
 function myFilter(pos,inp) {
   var input, filter, table, tr, td, i;
   input = document.getElementById(inp);
-  filter = input.value.toUpperCase();
+  filter = input.value.replace(/^0+/, '').toUpperCase();
   table = document.getElementById("tabela");
   tr = table.getElementsByTagName("tr");
   for (i = 1; i < tr.length; i++) {

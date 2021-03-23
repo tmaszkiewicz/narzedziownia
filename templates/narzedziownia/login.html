@@ -1,17 +1,21 @@
+{% extends 'narzedziownia/base.html' %}
 {% load staticfiles %}
+
+<head>
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <!------ Include the above in your HEAD tag ---------->
+{%block css%}
 <style>
 /* BASIC */
+
 
 html {
   background-color: #56baed;
 }
 
 body {
-  font-family: "Poppins", sans-serif;
   height: 100vh;
 }
 
@@ -19,7 +23,6 @@ a {
   color: #92badd;
   display:inline-block;
   text-decoration: none;
-  font-weight: 400;
 }
 
 h2 {
@@ -265,9 +268,10 @@ input[type=text]:placeholder {
 #icon {
   width:60%;
 }
-
 </style>
-
+{%endblock css%}
+</head>
+{%block body%}
 <div class="wrapper fadeInDown">
   <div id="formContent">
     <!-- Tabs Titles -->
@@ -291,5 +295,5 @@ input[type=text]:placeholder {
 
   </div>
 </div>
-
+{% endblock body %}
 

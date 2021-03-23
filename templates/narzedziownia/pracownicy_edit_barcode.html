@@ -73,7 +73,12 @@ wa.push({
 			</th>
 			</tr>
 			{%for i in Pobr_filter%}
-			<tr>
+                    {%if i.signature == None and i.signature_handy == None %}
+                        <tr style="color:#FF0000">
+                        {% else %}
+                        <tr >
+                        {% endif %}
+
 			<td>
 			{{i.narzedzie}} / {{i.narzedzie.opis}}
 			</td>
@@ -83,15 +88,26 @@ wa.push({
 			<td>
 			{{i.data_pobrania}}
 			</td>
+			<!--
 			<td>
 			{{i.data_oddania}}
-			</td>
+			</td>-->
 			<td>
 			<a href='http://jan-svr-intra01:8000/narzedziownia/pracownicy_usun_pobranie_barcode/{{Prac.pk}}/{{i.pk}}/'>X</a>
 			</td>
 			<td>
+                               {%if i.signature != None %}
+                                KARTA
 
-                        	<img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
+                                {% elif i.signature_handy != None%}
+
+
+                                        <img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
+                                {%else%}
+                                BRAK
+                                {% endif %}
+
+
      			</td>
 			</tr>
 			{%endfor%}

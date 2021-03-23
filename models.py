@@ -18,8 +18,10 @@ class Narzedzie(models.Model):
     nazwa = models.CharField(max_length=30,blank=True,null=True)
     opis = models.CharField(max_length=255,blank=True,null=False,default="") # previously null=True
     #waga = models.FloatField(null=True)
+    class Meta:
+        ordering = ['nazwa'] #### SORTOWANIE
     def __str__(self):
-        return self.nazwa
+        return str(self.nazwa)
 class NarzedzieForm(forms.ModelForm):
     class Meta:
         model = Narzedzie
@@ -38,6 +40,7 @@ class Pracownik(models.Model):
     komentarz = models.CharField(max_length=250,blank=True,null=True)
     potwierdzenie = models.CharField(max_length=50,blank=True,null=True)
     narzedzia = models.TextField(blank=True,null=True)
+    zwolniony = models.NullBooleanField(default=False,blank=True,null=True)
     def __str__(self):
         return str(self.nr_pracownika)+" "+str(self.nazwisko_imie)
 class PracownikForm(forms.ModelForm):
@@ -62,7 +65,10 @@ class Pobranie(models.Model):
     data_oddania=models.DateField(blank=True,null=True)
     signature=models.BinaryField(blank=True,null=True)
     sgn=models.CharField(max_length=100,blank=True,null=True)
+    opis=models.CharField(max_length=50,blank=True,null=True)
     signature_handy=JSignatureField(null=True,blank=True)
+    def __str__(self):
+        return self.narzedzie.nazwa+self.pracownik.nazwisko_imie
 
 class PobranieForm(forms.ModelForm):
     class Meta:
@@ -78,6 +84,9 @@ class PobranieOdziez(models.Model):
     data_oddania=models.DateField(blank=True,null=True)
     signature=models.BinaryField(blank=True,null=True)
     sgn=models.CharField(max_length=100,blank=True,null=True)
+    signature_handy=JSignatureField(null=True,blank=True)
+    def __str__(self):
+        return self.odziez.nazwa+self.pracownik.nazwisko_imie
 
 class PobranieOdziezForm(forms.ModelForm):
     class Meta:

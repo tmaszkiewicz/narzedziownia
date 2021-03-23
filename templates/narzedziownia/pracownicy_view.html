@@ -9,30 +9,172 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <link rel="stylesheet" href="{% static 'narzedziownia/css/styles.css' %}"  type="text/css" />
 
     <script type="text/javascript">
         setTimeout(function() {
+	
             window.location.href = "{% url 'narzedziownia:awaiting' %}";
-        }, 10000);
+        }, 120 * 1000);
+
     </script>
+<style>
+
+table {
+table-layout: fixed;
+width: 100%;
+background-color: #E8E8E8;
+
+border-radius: 10px;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+
+</style>
 
 </head>
 {% block body %}
+<script>
+document.documentElement.webkitRequestFullScreen();
+   //document.addEventListener("touchstart", touchHandler, true);
+   // document.addEventListener("touchmove", touchHandler, true);
+   // document.addEventListener("touchend", touchHandler, true);
+  //  document.addEventListener("touchcancel", touchHandler, true);
+
+</script>
 <div class="container">
 
 	<div class="row">
-		<div class="col-4">
+		<div class="col-sm-4">
   			<img src="{% static 'odziez/photos/' %}{{Prac.nr_pracownika}}.bmp" height="200px">
 		</div>
-		<div class="col-6">
+		<div class="col-sm-6">
     			<h5 class="card-title">DANE PRACOWNIKA</h5>
 			  <ul class="list-group list-group-flush">
 			    <li class="list-group-item">{{Prac.nr_pracownika}}</li>
 			    <li class="list-group-item">{{Prac.nazwisko_imie}}</li>
 			    <li class="list-group-item">{{Prac.dzial}}</li>
 			  </ul>
+			
+			<table>
+			<tr>
+			<th>
+			POBRANA ODZIEŻ
+			</th>
+			</tr>
+			{% for j in PobrOdziez_filter %}
+			<tr>
+			<td>
+			{{j.odziez.nazwa}} - {{j.ilosc}}
+			{{j.odziez.data_pobrania|date:"d-m-Y"}}
+			<!--
+
+			{{j.odziez.data_oddania|date:"d-m-Y"}} -->
+			<td>
+			</tr>
+			
+			{% endfor %}
+			</table>
+
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4">
+			<table>
+			
+			{%for i in Pobr_filter_kol1%}
+			{%if i.signature_handy == None%}
+			<tr style="color:#FF0000">
+			{%else%}
+			<tr>
+			{%endif%}
+				<td>
+					{{i.narzedzie}}
+				</td>
+				<td style="width:30px;">
+					{{i.ilosc}}
+				</td>
+				<td>
+					{{i.data_pobrania|date:"d-m-Y"}}
+				</td>
+				<!--
+				<td>
+					{{i.data_oddania|date:"d-m-Y"}}
+				</td>
+				-->
+			</tr>
+			{%endfor%}
+			</table>
+		
+			
+		</div>
+		<div class="col-sm-4">	
+			<table>
+			
+			{%for i in Pobr_filter_kol2%}
+			{%if i.signature_handy == None%}
+			<tr style="color:#FF0000">
+			{%else%}
+			<tr>
+			{%endif%}
+				<td>
+					{{i.narzedzie}}
+				</td>
+				<td style="width:30px;">
+					{{i.ilosc}}
+				</td>
+				<td>
+					{{i.data_pobrania|date:"d-m-Y"}}
+				</td>
+				<!--
+				<td>
+					{{i.data_oddania|date:"d-m-Y"}}
+				</td>
+
+				-->
+			</tr>
+			{%endfor%}
+		
+			</table>
+		</div>
+		<div class="col-sm-4">	
+			<table>
+			
+			{%for i in Pobr_filter_kol3%}
+			{%if i.signature_handy == None%}
+			<tr style="color:#FF0000">
+			{%else%}
+			<tr>
+			{%endif%}
+				<td>
+					{{i.narzedzie}}
+				</td>
+				<td style="width:30px;">
+					{{i.ilosc}}
+				</td>
+				<td
+					{{i.data_pobrania|date:"d-m-Y"}}
+				</td>
+				<!--
+				<td>
+					{{i.data_oddania|date:"d-m-Y"}}
+				</td>
+				-->
+			</tr>
+			{%endfor%}
+		
+			</table>
+		</div>
+	</div>	
+	<div class="row">
+		<div class="col-4">
+		</div>
+	
+		<div class="col-6">
+
 			<center>
 			<a>POTWIERDZAM LISTĘ UŻYTKOWANYCH NARZĘDZI</a>
 			<form name="prac" method="GET" enctype="multipart/form-data" action="">
@@ -41,98 +183,51 @@
 			</form>
 	
 			{{form_s.media}}
-			<form name="prac" method="GET" enctype="multipart/form-data" action="">
+
+			<script src="path/to/jSignature.min.js"></script>
+</script>
+			<form id="prac" name="prac" method="GET" enctype="multipart/form-data" action="">
 				{% csrf_token %}
-				{{form_s.signature}}
-			<input class="button" type="submit" value="SIGN"/>
-			</form>
-			
+				<table>
+				<tr><td>
 				
+				{{form_s.signature}}
+				</td></tr>
+				</table>
+			<input id="c" class="btn btn-dark btn-lg" type="submit" value="potwierdzam"/>
+			</form>
 			<center>
-			
 
+
+
+		</div>
+		<div class="col-2">
 		</div>
 	</div>
-
-	<div class="row">
-		<div class="col-4">
-			<table class="table table-sm">
-			
-			{%for i in Pobr_filter_kol1%}
-			<tr>
-				<td>
-					{{i.narzedzie}}
-				</td>
-				<td>
-					{{i.ilosc}}
-				</td>
-				<td>
-					{{i.data_pobrania}}
-				</td>
-				<td>
-					{{i.data_oddania}}
-				</td>
-			</tr>
-			{%endfor%}
-			</table>
-		
-			
-		</div>
-		<div class="col-4">	
-			<table class="table table-sm">
-			
-			{%for i in Pobr_filter_kol2%}
-			<tr>
-				<td>
-					{{i.narzedzie}}
-				</td>
-				<td>
-					{{i.ilosc}}
-				</td>
-				<td>
-					{{i.data_pobrania}}
-				</td>
-				<td>
-					{{i.data_oddania}}
-				</td>
-			</tr>
-			{%endfor%}
-		
-			</table>
-		</div>
-		<div class="col-4">	
-			<table class="table table-sm">
-			
-			{%for i in Pobr_filter_kol3%}
-			<tr>
-				<td>
-					{{i.narzedzie}}
-				</td>
-				<td>
-					{{i.ilosc}}
-				</td>
-				<td>
-					{{i.data_pobrania}}
-				</td>
-				<td>
-					{{i.data_oddania}}
-				</td>
-			</tr>
-			{%endfor%}
-		
-			</table>
-		</div>
-	</div>
-	<div class=row>
-	</div>
-		
-
-
 </div>
 
 
-
 <script type="text/javascript">
+
+var countDownDate = new Date().getTime()+1000*120;
+
+var x = setInterval(function() {
+  var now = new Date().getTime();
+
+  var distance = countDownDate - now;
+
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+document.getElementById("c").value = "POTWIERDZAM   " + minutes + "m " + seconds + "s ";
+
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("c").value = "EXPIRED";
+  }
+}, 100);
 function hide(id) {
 if( document.getElementById(id).style.visibility == "visible")
 {
@@ -149,7 +244,39 @@ function fill() {
 
 alert("Hello! I am an alert box!!");
 }
+function touchHandler(event)
+{
+    var touches = event.changedTouches,
+        first = touches[0],
+        type = "";
+    switch(event.type)
+    {
+        case "touchstart": type = "mousedown"; document.write("dddd");break;
+        case "touchmove":  type = "mousemove"; break;        
+        case "touchend":   type = "mouseup";   break;
+        default:           return;
+    }
 
+    // initMouseEvent(type, canBubble, cancelable, view, clickCount, 
+    //                screenX, screenY, clientX, clientY, ctrlKey, 
+    //                altKey, shiftKey, metaKey, button, relatedTarget);
 
+    var simulatedEvent = document.createEvent("MouseEvent");
+    simulatedEvent.initMouseEvent(type, true, true, window, 1, 
+                                  first.screenX, first.screenY, 
+                                  first.clientX, first.clientY, false, 
+                                  false, false, false, 0/*left*/, null);
+
+    first.target.dispatchEvent(simulatedEvent);
+    event.preventDefault();
+}
+
+function init() 
+{
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
+    document.addEventListener("touchcancel", touchHandler, true);    
+}
 </script>
 {% endblock body %}

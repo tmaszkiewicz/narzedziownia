@@ -55,7 +55,13 @@
 		</tr>
 		{%endfor%}
 		<tr>
+		{%if popraw == True%}
 		<td align="right">
+		<h1 style="background-color:powderblue;">WYBIERZ NARZEDZIE!!!!</h1>
+		{%else%}
+	
+		<td align="right">
+		{%endif%}
 			<br><br>
 			<h1> DODAJ POZYCJĘ SZABLONU</h1>
 		
@@ -64,7 +70,7 @@
                                 {% csrf_token %}
                                 {{form.narzedzie}}
                                 {{form.ilosc}}
-                                <input type="submit" class="btn btn-outline-primary" value="DODAJ"></input>
+                                <input type="submit" class="btn btn-outline-primary" value="DODAJ NARZĘDZIE"></input>
                         </form>
 		</td>
 		</tr>

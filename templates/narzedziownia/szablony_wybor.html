@@ -124,10 +124,16 @@ function goAddr(dzial,war) {
 
 dzial = document.getElementById(dzial);
 war = document.getElementById(war);
+if(war.value == "")
+{
+	alert("Wprowadz nazwe nowego szablonu!!!");
+}
+else
+{
 
 url="http://jan-svr-intra01:8000/narzedziownia/szablony_lista/"+dzial.value+"/"+war.value+"/";
  window.location.href = url;
-
+}
 }
 
 function initWariant() {

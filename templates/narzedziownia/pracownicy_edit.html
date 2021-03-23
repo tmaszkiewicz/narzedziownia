@@ -71,9 +71,14 @@ wa.push({
 				<br><br>
 				{% csrf_token %}
 				{{form.narzedzie}}
+				{{form.opis}}
 				{{form.ilosc}}
-				<input type="date" id="data_pobrania" onLoad="getDate()" name="data_pobrania" value= {{form.data_pobrannia}}></input>
-				<input type="date" id="data_oddania" name="data_oddania" value={{form.data_oddania}}></input>
+				<input type="date" id="data_pobrania" onLoad="getDate()" name="data_pobrania" value= {{form.data_pobrannia}}/>
+
+				<!--
+				<input type="date" id="data_oddania" name="data_oddania" value={{form.data_oddania}}></input>-->
+
+
 				<input type="submit" value="DODAJ"></input>
 			</form>
 		<br><br>
@@ -121,6 +126,8 @@ wa.push({
 			{{Prac.nazwisko_imie}}
 			<br>
 			<a href={% url 'narzedziownia:potwierdz' Prac.pk %}>WYSWIETL</a>
+			<br>
+			<button id="myBtn">Odzież</button>
 			
 		</div>
 		<div class="col-8">
@@ -134,22 +141,46 @@ wa.push({
 			ILOŚĆ
 			
 			</th>
+			<th>
+			POBRANIE
+			
+			</th>
+			<!--
+			<th>
+			ZWROT
+			</th>-->
+			<th>
+			USUN
+			</th>
+			<th>
+			DOPASUJ
+			</th>
+			<th>
+			PODPIS
+			</th>
 			</tr>
 			<form name="checkboxy" method="GET" enctype="multipart/form-data" action="">
+t
 			{%for i in Pobr_filter%}
-			<tr>
+			{%if i.signature == None and i.signature_handy == None %}
+			<tr style="color:#FF0000">
+			{% else %}
+			<tr >
+			{% endif %}
 			<td>
-			{{i.narzedzie}} / {{i.narzedzie.opis}}
+			{{i.narzedzie}} / <input type="text" size="10" name="opis{{i.pk}}" id="opis{{i.pk}}" value={{i.opis|default:""}}>
 			</td>
 			<td>
 			{{i.ilosc}}
 			</td>
 			<td>
-			{{i.data_pobrania}}
+			<input type="date" name="data{{i.pk}}" id="data{{i.pk}}" value="{{i.data_pobrania|date:"Y-m-d"}}">
 			</td>
+			<!--
 			<td>
 			{{i.data_oddania}}
 			</td>
+			-->
 
 			<td>
 			<a href='http://jan-svr-intra01:8000/narzedziownia/pracownicy_usun_pobranie/{{Prac.pk}}/{{i.pk}}/'>X</a>
@@ -158,7 +189,16 @@ wa.push({
 				<input type="checkbox" checked name={{i.pk}} id={{i.pk}}></input>
 			</td>
 			<td>
-				<img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
+				{%if i.signature != None %}
+				KARTA
+					
+				{% elif i.signature_handy != None%}
+			
+					
+					<img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
+				{%else%}
+				BRAK
+				{% endif %}
 			</td>
 			</tr>
 			{%endfor%}
@@ -175,65 +215,186 @@ wa.push({
 			</table>
 		</div>
 	</div>
+	<div class = "row">
+		
+		<div class="col-8">
+		</div>
+		<div class="col-4">
+		
+		<p align="left">	
+		<table class="table-sm table-info table-striped">
+		<tr>
+
+		<th>
+	
+		POBRANA ODZIEŻ
+
+		</th>
+		<th>	
+		IL.
+		</th>
+		<th>
+		DATA POBR.
+		</th>
+		<th>
+	
+		PODPIS
+
+		</th>
+		</tr>
+		{% for o in PobranieOdziez %}
+		<tr>
+		<td>
+		{{o.odziez}}
+		</td><td>
+		{{o.ilosc}}
+		</td><td>
+		{{o.data_pobrania|date:"Y-m-d"}}
+		</td>
+		<td>
+
+			{%if o.signature != None %}
+			KARTA
+				
+			{% elif o.signature_handy != None%}
+		
+				
+				<img src="{{ o.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
+			{%else%}
+			BRAK
+			{% endif %}
+		</td>
+
+
+		<br>
+		
+		
+		
+		</tr>
+		{%endfor%}
+		</table>
+		</p>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-12" align="right">
+
+			<button type="button" class="btn btn-danger btn-sm" id="myBtnAlert">Archiwizuj(NIE DZIALA!!!)</button>
+		</div>
+	</div>
 </div>
 
 <!-- Trigger/Open The Modal -->
-<button id="myBtn">Odzież</button>
+<!--<button id="myBtn">Odzież</button>-->
 
 <!-- The Modal -->
 <div id="myModal" class="modal">
   <!-- Modal content -->
-  <div class="modal-content">
+  <div class="modal-content modal-lg">
     <span class="close">&times;</span>
 	<form method="POST" action="">
 	{% csrf_token %}
+	<center>
+	<table class="table-sm">
 	{%for odz in Odziez%}
 	<div class="row">
-		<div class="col-10">
+	<tr>	
+		<div class="col-5">
+		<td>
 		    {{odz.nazwa}}
+		</td>
+		</div>
+		<div class="col-5">
+		<td>
+		{%if odz.checked  %}
+		 <input type="number" size="2" min="0" max="99"  id="n{{odz.odziez_id}}" name="n{{odz.odziez_id}}"  value={{odz.ilosc}}>
+		{% else %}
+
+		 <input  style="display:none;" type="number" size="2" min="0" max="99" id="n{{odz.odziez_id}}" name="n{{odz.odziez_id}}" value={{odz.ilosc}}>
+		{% endif %}
+	
+		
+		</td>
+		<td>
+
+		{%if odz.checked  %}
+		 <input type="date" id="d{{odz.odziez_id}}" name="d{{odz.odziez_id}}" value={{odz.data_pobrania|date:"Y-m-d"}}>
+		{% else %}
+
+		 <input  style="display:none;" type="date" id="d{{odz.odziez_id}}" name="d{{odz.odziez_id}}" value={{odz.data_pobrania|date:"Y-m-d"}}>
+		{% endif %}
+	
+		
+		</td>
 		</div>
 		<div class="col-2">
+		<td>
 		{%if odz.checked  %}
-		   <input type="checkbox" checked name={{odz.odziez_id}}>
+		   <input type="checkbox" checked name={{odz.odziez_id}} id={{odz.odziez_id}} onChange=dateHandler("d{{odz.odziez_id}}","{{odz.odziez_id}}","n{{odz.odziez_id}}")>
 		{%else%}
-		   <input type="checkbox" name={{odz.odziez_id}}>
+		   <input type="checkbox" name={{odz.odziez_id}} id={{odz.odziez_id}} onChange=dateHandler("d{{odz.odziez_id}}","{{odz.odziez_id}}","n{{odz.odziez_id}}") onLoad="getDate();">
 		{%endif%}
-	
+		</td>
 		</div>
+	<tr>
 	</div>
 	{%endfor%}
+	</table>
 	<input type="submit" value="OK">
 	</form>
 
   </div>
 
 </div>
+<div id=myModalAlert class="modal">
+
+  <div class="modal-content modal-sm">
+    <span class="closeAlert">&times;</span>
+    	<button type="button" class="btn btn-danger btn-sm" onClick="goAddrArch({{Prac.pk}})">ARCHIWIZUJ PRACOWNIKA: {{Prac.nazwisko_imie}}</button>
+	
+  </div>
+</div>
+
 
 <script type="text/javascript">
 // Get the modal
-
 var modal = document.getElementById("myModal");
-
+var modalAlert = document.getElementById("myModalAlert");
 // Get the button that opens the modal
 var btn = document.getElementById("myBtn");
+var btnAlert = document.getElementById("myBtnAlert");
 
 // Get the <span> element that closes the modal
 var span = document.getElementsByClassName("close")[0];
+var spanAlert = document.getElementsByClassName("closeAlert")[0];
 
 // When the user clicks the button, open the modal 
 btn.onclick = function() {
   modal.style.display = "block";
 }
 
+btnAlert.onclick = function() {
+try {
+  modalAlert.style.display = "block";
+} catch(error) {alert(error);}
+}
+
 // When the user clicks on <span> (x), close the modal
 span.onclick = function() {
   modal.style.display = "none";
+}
+spanAlert.onclick = function() {
+  modalAlert.style.display = "none";
 }
 
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
   if (event.target == modal) {
     modal.style.display = "none";
+
+  }
+  if (event.target == modalAlert) {
+    modalAlert.style.display = "none";
   }
 }
 
@@ -315,5 +476,41 @@ url="http://jan-svr-intra01:8000/narzedziownia/pracownicy_edit_barcode/"+prac+"/
 window.location.href = url;
 
 }
+function goAddrArch(prac) {
+
+url="http://jan-svr-intra01:8000/narzedziownia/pracownicy_arch/"+prac+"/";
+window.location.href = url;
+
+}
+function dateHandler(id,id2,id3) {
+try {
+	var datepicker = document.getElementById(id);
+	var checker = document.getElementById(id2);
+	var ilosc = document.getElementById(id3);
+	if(checker.checked)
+	{
+	ilosc.style.display="inline"
+	//var dateFormat = require('dateformat');
+	var today = new Date();
+
+
+
+	datepicker.style.display="inline";
+	if(datepicker.value == "" ){
+	datepicker.value = today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
+	}
+	}
+	else{
+	datepicker.style.display="none";
+	ilosc.style.display="none"
+	}
+
+ } catch(error){
+alert("error");
+}
+
+}
+
+
 </script>
 {% endblock body %}
