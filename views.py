@@ -47,8 +47,23 @@ def narzedzia_edit(request, *args, **kwargs):
     return render(request,url,context)
 def narzedzia_usun(request, *args, **kwargs):
     pk=kwargs['pk']
-    Narzedzie.objects.get(pk=pk).delete()
+
+    if Pobranie.objects.filter(narzedzie=pk).count() == 0:
+
+        Narzedzie.objects.get(pk=pk).delete()
+    else:
+        return HttpResponseRedirect("/narzedziownia/narzedzia_usun_alert/"+pk+"")
+
     return HttpResponseRedirect("/narzedziownia/narzedzia_lista/")
+def narzedzia_usun_alert(request, *args, **kwargs):
+    url='narzedziownia/narzedzia_usun_alert.html'
+    pk = kwargs['pk']
+    Narz = Narzedzie.objects.get(pk=pk)
+    Pobrania = Pobranie.objects.filter(narzedzie=pk)
+    context = { 'Pobrania':Pobrania, 'Narz':Narz }
+
+    return render(request,url,context)
+    
 def narzedzia_new(request, *args, **kwargs):
     print(request.POST)
     context = {
@@ -196,23 +211,6 @@ def pracownicy_lista(request, *args, **kwargs):
     return render(request,url,context)
 
 def pracownicy_lista_zwolnionych(request, *args, **kwargs):
-    import MySQLdb
-    #=== DODAJ ZATRUDNIENIA
-    try:
-        conn=MySQLdb.connect(host="192.168.41.15",user="kadry", passwd="start", db="KADRY",port=3306,charset='utf8')
-        cur = conn.cursor()
-        sql = "SELECT * FROM Nowi_pracownicy" 
-        cur.execute(sql)
-        rows=cur.fetchall()
-    except mdb.Error:
-        print("ERROR")
-        #print "Error %d: %s" % (e.args[0],e.args[1])
-        sys.exit(1)
-    finally:
-        if conn:
-            conn.close()
-    for i in rows:
-        Prac, created=Pracownik.objects.get_or_create(nazwisko_imie="{} {}".format(i[2],i[1]),dzial="{}".format(i[3]).upper(),stanowisko="{}".format(i[4]))
 
         #Prac=Pracownik()
         #Prac.nazwisko_imie="{} {}".format(i[2],i[1])
@@ -226,8 +224,6 @@ def pracownicy_lista_zwolnionych(request, *args, **kwargs):
         #print(i[3])
         #print(i[4])
         
-        
-
     context = {
     }
     url='narzedziownia/pracownicy_lista_zwolnionych.html'
@@ -313,6 +309,7 @@ def pracownicy_usun_pobranie_barcode(request, *args, **kwargs):
 @login_required(login_url='/narzedziownia/login2/')
 def pracownicy_edit(request, *args, **kwargs):
     from datetime import datetime
+    from django.urls import resolve
     context = {
     }
     dzialy = Pracownik.objects.values('dzial').distinct()
@@ -321,9 +318,11 @@ def pracownicy_edit(request, *args, **kwargs):
     url='narzedziownia/pracownicy_edit.html'
     pk=kwargs['pk']
     #print(kwargs)
+    current_url = resolve(request.path_info).url_name
+    print(current_url)
     Prac=Pracownik.objects.get(pk=pk)
-    if Prac.zwolniony == True:
-        return HttpResponseRedirect("/narzedziownia/zwolniony_alert/")
+    if Prac.zwolniony == True and current_url != "pracownicy_edit_arch":
+        return HttpResponseRedirect("/narzedziownia/zwolniony_alert/"+pk+"/")
     Narz_temp_str=Prac.narzedzia
 
     Lista_narz=Narzedzie.objects.all()
@@ -367,7 +366,7 @@ def pracownicy_edit(request, *args, **kwargs):
             ## USUWAMY TYLKO TYCH KTORYCH NIE MA
             try:
                 l=list(request.POST.keys())
-                l=list(filter(lambda x:not x.startswith(("d","n")) ,l))
+                l=list(filter(lambda x:not x.startswith(("d","n","o")) ,l))
                 l2=[]
                 for i in l:
                     try:
@@ -382,9 +381,10 @@ def pracownicy_edit(request, *args, **kwargs):
             ## DODAJEMY TYCH KTORYCH NIE MA....
 
             l=list(request.POST.keys())
-            lc=list(filter(lambda x:not x.startswith(("d","n")) ,l))
+            lc=list(filter(lambda x:not x.startswith(("d","n","o")) ,l))
             ld=list(filter(lambda x:x.startswith("d") ,l)) ####DATY 
             ln=list(filter(lambda x:x.startswith("n") ,l)) ####Ilosci
+            lo=list(filter(lambda x:x.startswith("o") ,l)) ####Oddano trzeba dorobic HTML
             for k in lc:
                 try:
                     
@@ -419,6 +419,19 @@ def pracownicy_edit(request, *args, **kwargs):
                 try:
                     P=PobranieOdziez.objects.get(odziez=O,pracownik=Prac)
                     P.ilosc=request.POST[k]
+                    P.save()
+                except:
+                    None
+            #Oddano 29032021
+            for k in lo:
+                p=k[1:]
+            #    
+                O=Odziez.objects.get(pk=p)
+                print(O)
+                #print(Od)
+                try:
+                    P=PobranieOdziez.objects.get(odziez=O,pracownik=Prac)
+                    P.oddano=request.POST[k]
                     P.save()
                 except:
                     None
@@ -495,21 +508,24 @@ def pracownicy_view(request, *args, **kwargs):
         form_s = SignatureForm(request.GET)
         form = PracownikFormConf(request.GET)
         if form.is_valid():
-            print(form.cleaned_data['potwierdzenie'])
-            #print(aes_it(form.cleaned_data['potwierdzenie']))
-         
-            sgn=form.cleaned_data['potwierdzenie'] +datetime.now().strftime("%d:%m:%Y:%H:%M:%S")
-            print(sgn)
-            for p in Pobr_filter:
-                p.signature=aes_it(sgn)
-                p.save()
-            for po in PobrOdziez_filter:
-                po.signature=aes_it(sgn)
-                po.save()
-            #Prac.save()
-            #for p in Pobr_filter:
-            #    print(p.signature)
-            return HttpResponseRedirect("/narzedziownia/confirmed/")
+            ss = form.cleaned_data['potwierdzenie']
+            if str(ss) == str(Prac.nr_karty): #  form.cleaned_data['potwierdzenie'] == str(Prac.nr_karty):
+                print(aes_it(form.cleaned_data['potwierdzenie']))
+             
+                sgn=form.cleaned_data['potwierdzenie'] +datetime.now().strftime("%d:%m:%Y:%H:%M:%S")
+                print(sgn)
+                for p in Pobr_filter:
+                    p.signature=aes_it(sgn)
+                    p.save()
+                for po in PobrOdziez_filter:
+                    po.signature=aes_it(sgn)
+                    po.save()
+                #Prac.save()
+                #for p in Pobr_filter:
+                #    print(p.signature)
+                return HttpResponseRedirect("/narzedziownia/confirmed/")
+            else:
+                return HttpResponseRedirect("/narzedziownia/notconfirmed/")
         elif form_s.is_valid():
             for p in Pobr_filter:
                 if p.signature_handy == None:
@@ -832,6 +848,13 @@ def confirmed(request, *args, **kwargs):
 
     return render(request,url,context)
 
+def notconfirmed(request, *args, **kwargs):
+    context={
+    }
+    
+    url='narzedziownia/notconfirmed.html'
+
+    return render(request,url,context)
 
     
 @login_required(login_url='/narzedziownia/login2/')
@@ -992,11 +1015,55 @@ def pdf_odziez(request,*args, **kwargs):
         can.setFont("AlegreyaSC",16)
         can.drawString(2*cm , 29*cm - row*cm, i.odziez.nazwa)
         can.drawString(10*cm , 29*cm - row*cm, str(i.ilosc))
+
         can.drawString(15*cm , 29*cm - row*cm, str(i.data_pobrania))
         row+=1
     can.showPage()
     can.save()
 
     return HttpResponse("fff")
-def zwolniony_alert(request):
-    return HttpResponse("ZWOLNIONY")
+def zwolniony_alert(request, *args, **kwargs):
+    url = 'narzedziownia/zwolniony_alert.html'
+    pk = kwargs['pk']
+    prac = Pracownik.objects.get(pk=pk)
+
+    context= {
+    }
+    context['prac']=prac
+
+    
+    return render(request,url,context)
+@login_required(login_url='/narzedziownia/login2/')
+def export(request, *args, **kwargs):
+    from openpyxl.styles import colors, Font, Color, Side, Border, PatternFill, GradientFill, Alignment
+    from openpyxl import Workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.column_dimensions['A'].width = 30
+    ws.column_dimensions['B'].width = 30
+    ws.column_dimensions['C'].width = 30
+    ws.column_dimensions['D'].width = 15
+    row = 1
+    ws['A1']="PRACOWNIK"
+    ws['B1']="DZIAL"
+    ws['C1']="ODZIEZ(OBUWIE)"
+    ws['D1']="DATA POBRANIA"
+
+
+    for i in PobranieOdziez.objects.filter(odziez__nazwa__contains="OBUWIE").order_by('pracownik__dzial'):
+        row += 1
+        cellA="A"+str(row)
+        ws[cellA]=str(i.pracownik.nazwisko_imie)
+        cellB="B"+str(row)
+        ws[cellB]=str(i.pracownik.dzial)
+        cellC="C"+str(row)
+        ws[cellC]=str(i.odziez.nazwa)
+        cellD="D"+str(row)
+        ws[cellD]=str(i.data_pobrania)
+    wb.save("apps/narzedziownia/static/export_odziez.xlsx")
+
+    context = {
+    }
+    url = 'narzedziownia/export.html'
+
+    return render(request,url,context)

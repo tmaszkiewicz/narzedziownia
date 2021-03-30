@@ -28,6 +28,7 @@ class NarzedzieForm(forms.ModelForm):
         fields = ['nazwa','opis']
 
 class Pracownik(models.Model):
+    from django.utils import timezone
     nr_pracownika = models.IntegerField(default=0)
     nr_karty = models.IntegerField(default=0)
     nazwisko_imie = models.CharField(max_length=50,blank=True,null=True)
@@ -61,8 +62,9 @@ class Pobranie(models.Model):
     pracownik = models.ForeignKey(Pracownik,on_delete=None,blank=True)
     narzedzie = models.ForeignKey(Narzedzie,on_delete=None,blank=True)
     ilosc = models.IntegerField(default=1)
-    data_pobrania=models.DateField(blank=True,null=True,default=timezone.now())
+    data_pobrania=models.DateField(blank=True,null=True,default=timezone.now) ### usuniete () po timezone.now 25-03-2021
     data_oddania=models.DateField(blank=True,null=True)
+    oddano = models.NullBooleanField(default=False,blank=True,null=True)
     signature=models.BinaryField(blank=True,null=True)
     sgn=models.CharField(max_length=100,blank=True,null=True)
     opis=models.CharField(max_length=50,blank=True,null=True)
@@ -82,8 +84,10 @@ class PobranieOdziez(models.Model):
     ilosc = models.IntegerField(default=1)
     data_pobrania=models.DateField(blank=True,null=True,default=timezone.now())
     data_oddania=models.DateField(blank=True,null=True)
+    oddano = models.NullBooleanField(default=False,blank=True,null=True)
     signature=models.BinaryField(blank=True,null=True)
     sgn=models.CharField(max_length=100,blank=True,null=True)
+    opis=models.CharField(max_length=50,blank=True,null=True)
     signature_handy=JSignatureField(null=True,blank=True)
     def __str__(self):
         return self.odziez.nazwa+self.pracownik.nazwisko_imie

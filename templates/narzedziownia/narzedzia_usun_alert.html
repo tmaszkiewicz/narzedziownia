@@ -1,0 +1,37 @@
+{% extends "narzedziownia/base.html" %}
+{% block body %}
+<h2>
+	NIE MOŻNA USUNĄĆ NARZĘDZIA {{Narz.nazwa}}  
+</h2>
+<h1>
+	JEST ONO OBECNIE UŻYTKOWANE PRZEZ:
+</h1>
+<table class="table">
+    <thead class="thead-light">
+      <tr>
+        <th>Nazwiski Imię</th>
+        <th>ID</th>
+        <th>Data wypożyczenia</th>
+      </tr>
+    </thead>
+<tbody class="tbody-light">
+{%for p in Pobrania%}
+<tr>
+<td>
+{{p.pracownik.nazwisko_imie}}
+</td>
+<td>
+{{p.pracownik.nr_pracownika}}
+</td>
+<td>
+{{p.data_pobrania}}
+</td>
+</tr>
+</tbody>
+</table>
+{%endfor%}
+<h1>
+<center>
+<a href={% url 'narzedziownia:narzedzia_lista' %}>POWROT</a>
+</h1>
+{% endblock body %}

@@ -168,7 +168,7 @@ t
 			<tr >
 			{% endif %}
 			<td>
-			{{i.narzedzie}} / <input type="text" size="10" name="opis{{i.pk}}" id="opis{{i.pk}}" value={{i.opis|default:""}}>
+			{{i.narzedzie}} / <input type="text" size="10" name="opis{{i.pk}}" id="opis{{i.pk}}" value="{{i.opis|default:""}}">
 			</td>
 			<td>
 			{{i.ilosc}}
@@ -279,7 +279,7 @@ t
 	<div class="row">
 		<div class="col-12" align="right">
 
-			<button type="button" class="btn btn-danger btn-sm" id="myBtnAlert">Archiwizuj(NIE DZIALA!!!)</button>
+			<button type="button" class="btn btn-danger btn-sm" id="myBtnAlert">Archiwizuj</button>
 		</div>
 	</div>
 </div>

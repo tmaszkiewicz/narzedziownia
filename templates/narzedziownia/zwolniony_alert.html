@@ -1,0 +1,8 @@
+{% extends "narzedziownia/base.html" %}
+{% block body %}
+<h1>
+PRACOWNIK ARCHIWALNY {{prac.nazwisko}}
+</h1>
+<a href={% url 'narzedziownia:pracownicy_edit_arch' prac.pk %} > KLIKNIJ LINK PONIZEJ BY PRZEJSC DO EDYCJI
+</a>
+{% endblock body %}

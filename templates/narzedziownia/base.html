@@ -24,10 +24,13 @@
 <ul>
   <li class="current"><a href="{% url 'narzedziownia:pracownicy_lista'%}"><span>Pracownicy</span></a></li>
 
-  <li class="current"><a href="{% url 'narzedziownia:login1'%}"><span>Wybór kartą</span></a></li>
+  <li><a href="{% url 'narzedziownia:login1'%}"><span>Wybór kartą</span></a></li>
   <li><a href="{% url 'narzedziownia:narzedzia_lista'%}"><span>Narzedzia</span></a></li>
   <li><a href="/narzedziownia/szablony_wybor/" ><span>Szablony pobran</span></a></li>
   <li><a href="{% url 'narzedziownia:odziez_lista' %}" ><span>Odziez</span></a></li>
+  <li><a href="{% url 'narzedziownia:pracownicy_lista_zwolnionych'%}"><span>Archiwum</span></a></li>
+  <li><a href="{% url 'narzedziownia:export'%}"><span>Eksport</span></a></li>
+
    {% if user.is_authenticated %}
      <li><a href='/narzedziownia/logout2'?next={{request.path}}"><span>Logout: {{user.get_username}}</span></a></li>
    {% else %}
