@@ -145,6 +145,10 @@ wa.push({
 			POBRANIE
 			
 			</th>
+			<th>
+			ODDANO
+			
+			</th>
 			<!--
 			<th>
 			ZWROT
@@ -176,16 +180,22 @@ t
 			<td>
 			<input type="date" name="data{{i.pk}}" id="data{{i.pk}}" value="{{i.data_pobrania|date:"Y-m-d"}}">
 			</td>
-			<!--
-			<td>
-			{{i.data_oddania}}
-			</td>
-			-->
+			
+			<td style="text-align:center;">
+			
+			{%if i.oddano%}
+			<input type="checkbox" checked name="oddano{{i.pk}}" id="oddano{{i.pk}}"></input>
+			{%else%}
+			<input type="checkbox"  name="oddano{{i.pk}}" id="oddano{{i.pk}}"></input>
+			{%endif%}
 
-			<td>
+			</td>
+		
+
+			<td style="text-align:center;">
 			<a href='http://jan-svr-intra01:8000/narzedziownia/pracownicy_usun_pobranie/{{Prac.pk}}/{{i.pk}}/'>X</a>
 			</td>
-			<td>
+			<td style="text-align:center; background-color:#ffebe6;">
 				<input type="checkbox" checked name={{i.pk}} id={{i.pk}}></input>
 			</td>
 			<td>
@@ -243,6 +253,7 @@ t
 		</th>
 		</tr>
 		{% for o in PobranieOdziez %}
+		{%if not o.oddano %}
 		<tr>
 		<td>
 		{{o.odziez}}
@@ -271,6 +282,7 @@ t
 		
 		
 		</tr>
+		{%endif%}
 		{%endfor%}
 		</table>
 		</p>
@@ -296,6 +308,25 @@ t
 	{% csrf_token %}
 	<center>
 	<table class="table-sm">
+	<thead class="thead-dark">
+		<tr style="background-color:grey;">
+			<th style="background-color:grey;">
+				ODZIEŻ
+			</th>
+			<th>
+				ILOŚĆ
+			</th>
+			<th>
+				DATA_POBR
+			</th>
+			<th>
+				ODDANA
+			</th>
+			<th>
+				PRZYPISANA
+			</th>
+		<tr>
+	</thead>
 	{%for odz in Odziez%}
 	<div class="row">
 	<tr>	
@@ -317,22 +348,46 @@ t
 		</td>
 		<td>
 
-		{%if odz.checked  %}
+		{%if odz.checked %}
 		 <input type="date" id="d{{odz.odziez_id}}" name="d{{odz.odziez_id}}" value={{odz.data_pobrania|date:"Y-m-d"}}>
 		{% else %}
 
-		 <input  style="display:none;" type="date" id="d{{odz.odziez_id}}" name="d{{odz.odziez_id}}" value={{odz.data_pobrania|date:"Y-m-d"}}>
+		 <input style="display:none;" type="date" id="d{{odz.odziez_id}}" name="d{{odz.odziez_id}}" value={{odz.data_pobrania|date:"Y-m-d"}}>
+		{% endif %}
+	
+		
+		</td>
+		<td style="text-align:center;">
+
+		{% if odz.checked and odz.oddano%}
+		
+	
+			<input type="checkbox" id="o{{odz.odziez_id}}" name="o{{odz.odziez_id}}" checked>
+
+		{% elif odz.checked and not odz.oddano%}
+
+			<input type="checkbox" id="o{{odz.odziez_id}}" name="o{{odz.odziez_id}}">
+		
+
+		{% elif not odz.checked and odz.oddano%}
+
+		<input style="display:none;" type="checkbox" id="o{{odz.odziez_id}}" name="o{{odz.odziez_id}}" checked>
+
+		{% elif not odz.checked and not odz.oddano%}
+
+		<input style="display:none;" type="checkbox" id="o{{odz.odziez_id}}" name="o{{odz.odziez_id}}">
+
 		{% endif %}
 	
 		
 		</td>
 		</div>
 		<div class="col-2">
-		<td>
+		<td  style="text-align:center; background-color:#ffebe6;">
 		{%if odz.checked  %}
-		   <input type="checkbox" checked name={{odz.odziez_id}} id={{odz.odziez_id}} onChange=dateHandler("d{{odz.odziez_id}}","{{odz.odziez_id}}","n{{odz.odziez_id}}")>
+		   <input type="checkbox" checked name={{odz.odziez_id}} id={{odz.odziez_id}} onChange=dateHandler("d{{odz.odziez_id}}","{{odz.odziez_id}}","n{{odz.odziez_id}}","o{{odz.odziez_id}}")>
 		{%else%}
-		   <input type="checkbox" name={{odz.odziez_id}} id={{odz.odziez_id}} onChange=dateHandler("d{{odz.odziez_id}}","{{odz.odziez_id}}","n{{odz.odziez_id}}") onLoad="getDate();">
+		   <input type="checkbox" name={{odz.odziez_id}} id={{odz.odziez_id}} onChange=dateHandler("d{{odz.odziez_id}}","{{odz.odziez_id}}","n{{odz.odziez_id}}","o{{odz.odziez_id}}") onLoad="getDate();">
 		{%endif%}
 		</td>
 		</div>
@@ -482,14 +537,16 @@ url="http://jan-svr-intra01:8000/narzedziownia/pracownicy_arch/"+prac+"/";
 window.location.href = url;
 
 }
-function dateHandler(id,id2,id3) {
+function dateHandler(id,id2,id3,id4) {
 try {
 	var datepicker = document.getElementById(id);
 	var checker = document.getElementById(id2);
 	var ilosc = document.getElementById(id3);
+	var oddano = document.getElementById(id4);
 	if(checker.checked)
 	{
 	ilosc.style.display="inline"
+	oddano.style.display="inline"
 	//var dateFormat = require('dateformat');
 	var today = new Date();
 
@@ -503,6 +560,7 @@ try {
 	else{
 	datepicker.style.display="none";
 	ilosc.style.display="none"
+	oddano.style.display="none"
 	}
 
  } catch(error){

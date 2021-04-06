@@ -93,7 +93,7 @@ document.documentElement.webkitRequestFullScreen();
 			{%endif%}
 				<td style="width:220px;">
 					{{i.narzedzie}}
-					{%if i.narzedzie.pk == 68%}
+					{%if i.opis != None and i.opis != "" %}
 					 - {{i.opis}}
 					{%endif%}
 
@@ -126,7 +126,7 @@ document.documentElement.webkitRequestFullScreen();
 			{%endif%}
 				<td style="width:220px;">
 					{{i.narzedzie}}
-					{%if i.narzedzie.pk == 68%}
+					{%if i.opis != None and i.opis != "" %}
 					- {{i.opis}}
 					{%endif%}
 				</td>
@@ -158,7 +158,7 @@ document.documentElement.webkitRequestFullScreen();
 			{%endif%}
 				<td  style="width:220px;">
 					{{i.narzedzie}}
-					{%if i.narzedzie.pk == 68%}
+					{%if i.opis != None and i.opis != "" %}
 					- {{i.opis}}
 					{%endif%}
 				</td>

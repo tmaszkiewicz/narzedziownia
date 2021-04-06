@@ -328,9 +328,17 @@ def pracownicy_edit(request, *args, **kwargs):
     Lista_narz=Narzedzie.objects.all()
     narz_list=""
     Pobr=Pobranie()
+    
+
     # Add sth invisible, like pk in oder to avoid sending empty GET after submitting.
     pozostaja=[]
+
+    ###Czyscimy status oddanie
     if request.method == 'GET' and request.GET!={}:
+        for pr in Pobranie.objects.filter(pracownik__pk=pk):
+            pr.oddano=False
+            pr.save()
+            
         for i in request.GET:
             if i.startswith("opis"):
                 p = Pobranie.objects.get(pk=i[4:])
@@ -339,6 +347,12 @@ def pracownicy_edit(request, *args, **kwargs):
             elif i.startswith("data"):
                 p = Pobranie.objects.get(pk=i[4:])
                 p.data_pobrania=request.GET[i]
+                p.save()
+            elif i.startswith("oddano"):
+                print("++++",request.GET[i])
+                p = Pobranie.objects.get(pk=i[6:])
+                if request.GET[i]=="on":
+                    p.oddano=True
                 p.save()
 
             else:
@@ -354,6 +368,7 @@ def pracownicy_edit(request, *args, **kwargs):
             Pobr.narzedzie=Narzedzie.objects.get(pk=pk_narz)
             Pobr.opis=request.POST['opis']
             Pobr.ilosc=request.POST['ilosc']
+
             if request.POST['data_pobrania']!="":
                 Pobr.data_pobrania=request.POST['data_pobrania']
 
@@ -419,10 +434,12 @@ def pracownicy_edit(request, *args, **kwargs):
                 try:
                     P=PobranieOdziez.objects.get(odziez=O,pracownik=Prac)
                     P.ilosc=request.POST[k]
+                    P.oddano=False ### Zerujemy odddano, bo w sekcji ponizej  przyjmuje jakakolwiek wartosc tylko  w przypadku "On" zerujemy sobie tu
                     P.save()
                 except:
                     None
             #Oddano 29032021
+            
             for k in lo:
                 p=k[1:]
             #    
@@ -431,7 +448,9 @@ def pracownicy_edit(request, *args, **kwargs):
                 #print(Od)
                 try:
                     P=PobranieOdziez.objects.get(odziez=O,pracownik=Prac)
-                    P.oddano=request.POST[k]
+                    if request.POST[k]=="on":
+                        P.oddano=True
+                
                     P.save()
                 except:
                     None
@@ -471,6 +490,7 @@ def pracownicy_edit(request, *args, **kwargs):
             o['checked']=True
             o['data_pobrania']=PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).data_pobrania
             o['ilosc']=PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).ilosc
+            o['oddano'] = PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).oddano
         else:
             o['checked']=False
             #o['data_pobrania']=PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).data_pobrania
@@ -502,8 +522,8 @@ def pracownicy_view(request, *args, **kwargs):
     Lista_narz=Narzedzie.objects.all()
     narz_list=""
     Pobr=Pobranie()
-    Pobr_filter=Pobranie.objects.filter(pracownik=pk)
-    PobrOdziez_filter=PobranieOdziez.objects.filter(pracownik=pk)
+    Pobr_filter=Pobranie.objects.filter(pracownik=pk,oddano=False)
+    PobrOdziez_filter=PobranieOdziez.objects.filter(pracownik=pk,oddano=False)
     if request.method == 'GET':
         form_s = SignatureForm(request.GET)
         form = PracownikFormConf(request.GET)
@@ -554,9 +574,9 @@ def pracownicy_view(request, *args, **kwargs):
     context['form_s']=form_s
     context['form']=form
     context['Prac']=Prac
-    Pobr_filter_kol1=Pobranie.objects.filter(pracownik=pk)[:9]
-    Pobr_filter_kol2=Pobranie.objects.filter(pracownik=pk)[9:19]
-    Pobr_filter_kol3=Pobranie.objects.filter(pracownik=pk)[19:]
+    Pobr_filter_kol1=Pobranie.objects.filter(pracownik=pk,oddano=False)[:9]
+    Pobr_filter_kol2=Pobranie.objects.filter(pracownik=pk,oddano=False)[9:19]
+    Pobr_filter_kol3=Pobranie.objects.filter(pracownik=pk,oddano=False)[19:]
     context['PobrOdziez_filter']=PobrOdziez_filter
     context['Pobr_filter']=Pobr_filter
     context['Pobr_filter_kol1']=Pobr_filter_kol1
