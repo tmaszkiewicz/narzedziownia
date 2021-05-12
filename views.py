@@ -187,7 +187,10 @@ def pracownicy_lista(request, *args, **kwargs):
         if conn:
             conn.close()
     for i in rows:
+        #try:
         Prac, created=Pracownik.objects.get_or_create(nazwisko_imie="{} {}".format(i[2],i[1]),dzial="{}".format(i[3]).upper(),stanowisko="{}".format(i[4]))
+        #except:
+        #    print(i[2],i[1],i[3],i[4])
 
         #Prac=Pracownik()
         #Prac.nazwisko_imie="{} {}".format(i[2],i[1])
@@ -381,7 +384,7 @@ def pracownicy_edit(request, *args, **kwargs):
             ## USUWAMY TYLKO TYCH KTORYCH NIE MA
             try:
                 l=list(request.POST.keys())
-                l=list(filter(lambda x:not x.startswith(("d","n","o")) ,l))
+                l=list(filter(lambda x:not x.startswith(("d","n","o","a")) ,l))
                 l2=[]
                 for i in l:
                     try:
@@ -396,10 +399,11 @@ def pracownicy_edit(request, *args, **kwargs):
             ## DODAJEMY TYCH KTORYCH NIE MA....
 
             l=list(request.POST.keys())
-            lc=list(filter(lambda x:not x.startswith(("d","n","o")) ,l))
+            lc=list(filter(lambda x:not x.startswith(("d","n","o","a")) ,l))
             ld=list(filter(lambda x:x.startswith("d") ,l)) ####DATY 
             ln=list(filter(lambda x:x.startswith("n") ,l)) ####Ilosci
             lo=list(filter(lambda x:x.startswith("o") ,l)) ####Oddano trzeba dorobic HTML
+            la=list(filter(lambda x:x.startswith("a") ,l)) ####Opis - adnotacja 06.04.2021
             for k in lc:
                 try:
                     
@@ -455,6 +459,18 @@ def pracownicy_edit(request, *args, **kwargs):
                 except:
                     None
 
+            for k in la:
+                p=k[1:]
+            #    
+                O=Odziez.objects.get(pk=p)
+                print(O)
+                #print(Od)
+                try:
+                    P=PobranieOdziez.objects.get(odziez=O,pracownik=Prac)
+                    P.opis=request.POST[k]
+                    P.save()
+                except:
+                    None
 
             #    data_pobrania= request.POST[k]
            #:     print("aaaaaaaa",pk)
@@ -491,6 +507,11 @@ def pracownicy_edit(request, *args, **kwargs):
             o['data_pobrania']=PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).data_pobrania
             o['ilosc']=PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).ilosc
             o['oddano'] = PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).oddano
+            o['opis'] = PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).opis
+            #09-04-2021 moze zbedne
+            if  PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).signature or  PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).signature_handy:
+                o['podpisano']=True
+
         else:
             o['checked']=False
             #o['data_pobrania']=PobranieOdziez.objects.get(pracownik=pk,odziez__pk=pk_odziez).data_pobrania
@@ -713,8 +734,9 @@ def import_pracownikow(request, *args, **kwargs):
         cell_src_7 = sheet_src.cell(row = i, column = 7) #Rodzaj wynagrodzenia
         cell_src_8 = sheet_src.cell(row = i, column = 8) #TypUmowy
         cell_src_9 = sheet_src.cell(row = i, column = 9) #Karta
+
         try:
-            p=Pracownik.objects.get(nr_pracownika=cell_src_1.value)
+            p=Pracownik.objects.get(nr_pracownika=cell_src_1.value,nazwisko_imie=cell_src_2.value)
             p.nr_pracownika=cell_src_1.value
             p.nazwisko_imie=cell_src_2.value
             p.dzial=cell_src_3.value
@@ -723,12 +745,12 @@ def import_pracownikow(request, *args, **kwargs):
             p.spot=cell_src_6.value
             p.podgrupa_prac=cell_src_7.value
             p.typ_umowy=cell_src_8.value
-            p.nr_karty=int(cell_src_9.value)
+            p.nr_karty=cell_src_9.value
             p.save()
             rows.append(p)
-        except:
+        except Exception as err:
             try:
-                p,created=Pracownik.objects.get_or_create(nazwisko_imie=cell_src_2.value)
+                p,created=Pracownik.objects.get_or_create(nr_pracownika=0,nazwisko_imie__startswith=cell_src_2.value)
                 p.nr_pracownika=cell_src_1.value
                 p.nazwisko_imie=cell_src_2.value
                 p.dzial=cell_src_3.value
@@ -737,11 +759,12 @@ def import_pracownikow(request, *args, **kwargs):
                 p.spot=cell_src_6.value
                 p.podgrupa_prac=cell_src_7.value
                 p.typ_umowy=cell_src_8.value
-                p.nr_karty=int(cell_src_9.value)
+                p.nr_karty=cell_src_9.value
                 p.save()
                 rows.append(p)
-            except:
-                print(cell_src_2.value)
+            except Exception as err1:
+                print(err1)
+        
         finally:
             
             None

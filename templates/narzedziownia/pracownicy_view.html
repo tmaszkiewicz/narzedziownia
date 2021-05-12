@@ -67,7 +67,7 @@ document.documentElement.webkitRequestFullScreen();
 			{% for j in PobrOdziez_filter %}
 			<tr>
 			<td>
-			{{j.odziez.nazwa}} - {{j.ilosc}}
+			{{j.odziez.nazwa}} {%if j.opis != "" and  j.opis != "None" %}{{j.opis}}{%endif%}  - {{j.ilosc}}
 			{{j.odziez.data_pobrania|date:"d-m-Y"}}
 			<!--
 

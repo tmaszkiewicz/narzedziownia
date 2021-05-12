@@ -178,7 +178,12 @@ t
 			{{i.ilosc}}
 			</td>
 			<td>
+			{%if i.signature or i.signature_handy %}
+			<input type="date" name="data{{i.pk}}" id="data{{i.pk}}" value="{{i.data_pobrania|date:"Y-m-d"}}" disabled>
+			{%else%}
 			<input type="date" name="data{{i.pk}}" id="data{{i.pk}}" value="{{i.data_pobrania|date:"Y-m-d"}}">
+			{%endif%}
+
 			</td>
 			
 			<td style="text-align:center;">
@@ -257,6 +262,9 @@ t
 		<tr>
 		<td>
 		{{o.odziez}}
+		{% if o.opis != "" and o.opis != "None" %}
+		 - {{o.opis}}
+		{%endif%}
 		</td><td>
 		{{o.ilosc}}
 		</td><td>
@@ -311,7 +319,7 @@ t
 	<thead class="thead-dark">
 		<tr style="background-color:grey;">
 			<th style="background-color:grey;">
-				ODZIEŻ
+				ODZIEŻ/OPIS
 			</th>
 			<th>
 				ILOŚĆ
@@ -332,10 +340,17 @@ t
 	<tr>	
 		<div class="col-5">
 		<td>
-		    {{odz.nazwa}}
+		    {{odz.nazwa}} 
+		{%if odz.checked  %}
+		/
+		 <input type="text" size="8"   id="a{{odz.odziez_id}}" name="a{{odz.odziez_id}}"  value="{{odz.opis}}">
+		{% else %}
+
+		 <input  style="display:none;" type="text" size="8" id="a{{odz.odziez_id}}" name="a{{odz.odziez_id}}" value={{odz.opis}}>
+		{% endif %}
+	
+		
 		</td>
-		</div>
-		<div class="col-5">
 		<td>
 		{%if odz.checked  %}
 		 <input type="number" size="2" min="0" max="99"  id="n{{odz.odziez_id}}" name="n{{odz.odziez_id}}"  value={{odz.ilosc}}>
@@ -348,8 +363,10 @@ t
 		</td>
 		<td>
 
-		{%if odz.checked %}
+		{%if odz.checked and not odz.podpisano%}
 		 <input type="date" id="d{{odz.odziez_id}}" name="d{{odz.odziez_id}}" value={{odz.data_pobrania|date:"Y-m-d"}}>
+		{% elif odz.checked and odz.podpisano %}
+		 <input type="date" id="d{{odz.odziez_id}}" name="d{{odz.odziez_id}}" value={{odz.data_pobrania|date:"Y-m-d"}} disabled>
 		{% else %}
 
 		 <input style="display:none;" type="date" id="d{{odz.odziez_id}}" name="d{{odz.odziez_id}}" value={{odz.data_pobrania|date:"Y-m-d"}}>
@@ -385,9 +402,9 @@ t
 		<div class="col-2">
 		<td  style="text-align:center; background-color:#ffebe6;">
 		{%if odz.checked  %}
-		   <input type="checkbox" checked name={{odz.odziez_id}} id={{odz.odziez_id}} onChange=dateHandler("d{{odz.odziez_id}}","{{odz.odziez_id}}","n{{odz.odziez_id}}","o{{odz.odziez_id}}")>
+		   <input type="checkbox" checked name={{odz.odziez_id}} id={{odz.odziez_id}} onChange=dateHandler("d{{odz.odziez_id}}","{{odz.odziez_id}}","n{{odz.odziez_id}}","o{{odz.odziez_id}}","a{{odz.odziez_id}}")>
 		{%else%}
-		   <input type="checkbox" name={{odz.odziez_id}} id={{odz.odziez_id}} onChange=dateHandler("d{{odz.odziez_id}}","{{odz.odziez_id}}","n{{odz.odziez_id}}","o{{odz.odziez_id}}") onLoad="getDate();">
+		   <input type="checkbox" name={{odz.odziez_id}} id={{odz.odziez_id}} onChange=dateHandler("d{{odz.odziez_id}}","{{odz.odziez_id}}","n{{odz.odziez_id}}","o{{odz.odziez_id}}","a{{odz.odziez_id}}") onLoad="getDate();">
 		{%endif%}
 		</td>
 		</div>
@@ -537,12 +554,13 @@ url="http://jan-svr-intra01:8000/narzedziownia/pracownicy_arch/"+prac+"/";
 window.location.href = url;
 
 }
-function dateHandler(id,id2,id3,id4) {
+function dateHandler(id,id2,id3,id4,id5) {
 try {
 	var datepicker = document.getElementById(id);
 	var checker = document.getElementById(id2);
 	var ilosc = document.getElementById(id3);
 	var oddano = document.getElementById(id4);
+	var opis = document.getElementById(id5);
 	if(checker.checked)
 	{
 	ilosc.style.display="inline"
@@ -551,7 +569,7 @@ try {
 	var today = new Date();
 
 
-
+	opis.style.display="inline";
 	datepicker.style.display="inline";
 	if(datepicker.value == "" ){
 	datepicker.value = today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
@@ -561,6 +579,7 @@ try {
 	datepicker.style.display="none";
 	ilosc.style.display="none"
 	oddano.style.display="none"
+	opis.style.display="none"
 	}
 
  } catch(error){
