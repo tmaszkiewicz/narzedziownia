@@ -204,13 +204,17 @@ t
 				<input type="checkbox" checked name={{i.pk}} id={{i.pk}}></input>
 			</td>
 			<td>
-				{%if i.signature != None %}
-				KARTA
+				{%if i.signature != None%}
+					{%if i.signature_handy%}
+				 <!--KARTA-->
+				  <img src="{% static 'narzedziownia/karta.jpg' %}" width="30px"/> <img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
+					{%else%}
+					<!--KARTA-->
+					 <img src="{% static 'narzedziownia/karta.jpg' %}" width="30px"/>
+					{%endif%}
 					
-				{% elif i.signature_handy != None%}
-			
-					
-					<img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
+				{%elif  i.signature_handy%}
+					 <img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
 				{%else%}
 				BRAK
 				{% endif %}
@@ -273,7 +277,8 @@ t
 		<td>
 
 			{%if o.signature != None %}
-			KARTA
+			<!--KARTA-->
+			<img src="{% static 'narzedziownia/karta.jpg' %}" width="30px"/> 
 				
 			{% elif o.signature_handy != None%}
 		

@@ -548,9 +548,19 @@ def pracownicy_view(request, *args, **kwargs):
     if request.method == 'GET':
         form_s = SignatureForm(request.GET)
         form = PracownikFormConf(request.GET)
+        ## Do poprawki, trzeba sprawdzać dopiero kiedy wartość będzie miała 6 znakow (lub 8 z zerami)
         if form.is_valid():
+            #if len(form.cleaned_data['potwierdzenie'])==8:
+                
+
+            print("KARTA:",form.cleaned_data['potwierdzenie'])
             ss = form.cleaned_data['potwierdzenie']
-            if str(ss) == str(Prac.nr_karty): #  form.cleaned_data['potwierdzenie'] == str(Prac.nr_karty):
+            #print("====")
+            #print(ss)
+            #print("00{}".format(str(Prac.nr_karty)))
+            #print("====")
+            if (str(ss) == "00{}".format(str(Prac.nr_karty))) and len(form.cleaned_data['potwierdzenie'])==8: #  form.cleaned_data['potwierdzenie'] == str(Prac.nr_karty):
+
                 print(aes_it(form.cleaned_data['potwierdzenie']))
              
                 sgn=form.cleaned_data['potwierdzenie'] +datetime.now().strftime("%d:%m:%Y:%H:%M:%S")
@@ -565,23 +575,28 @@ def pracownicy_view(request, *args, **kwargs):
                 #for p in Pobr_filter:
                 #    print(p.signature)
                 return HttpResponseRedirect("/narzedziownia/confirmed/")
-            else:
+            elif  (str(ss) != "00{}".format(str(Prac.nr_karty))) and len(form.cleaned_data['potwierdzenie'])==8:
+
                 return HttpResponseRedirect("/narzedziownia/notconfirmed/")
+            else:
+                None
+            #else:
+            #    print("czekam na odpowiednia dlugosc, teraz {}".format(len(form.cleaned_data['potwierdzenie'])))
         elif form_s.is_valid():
             for p in Pobr_filter:
-                if p.signature_handy == None:
+                if p.signature_handy == None and p.signature == None:
                     p.signature_handy=form_s.cleaned_data['signature']
                     p.save()
             ##Poprawka 02-03-2021
             for po in PobrOdziez_filter:
-                if po.signature_handy == None:
+                if po.signature_handy == None and po.signature == None:
                     po.signature_handy=form_s.cleaned_data['signature']
                     po.save()
             #Prac.save()
             for p in Pobr_filter:
                 print(p.signature_handy)
             return HttpResponseRedirect("/narzedziownia/confirmed/")
-
+        
         else:
             None
     else:
