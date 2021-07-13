@@ -583,10 +583,17 @@ def pracownicy_view(request, *args, **kwargs):
             #else:
             #    print("czekam na odpowiednia dlugosc, teraz {}".format(len(form.cleaned_data['potwierdzenie'])))
         elif form_s.is_valid():
+            if Prac.signature_handy_default == None:
+                Prac.signature_handy_default = form_s.cleaned_data['signature']
+                Prac.save()
+            else:
+                print("Już jest")
             for p in Pobr_filter:
-                if p.signature_handy == None and p.signature == None:
+                if p.signature_handy == None and p.signature == None:  ### Co z tym? Czy parafka jesli jest cyfra?
                     p.signature_handy=form_s.cleaned_data['signature']
+
                     p.save()
+                    ## Tu trzeba skopiować parafke na parafke domyslna
             ##Poprawka 02-03-2021
             for po in PobrOdziez_filter:
                 if po.signature_handy == None and po.signature == None:
@@ -1125,3 +1132,18 @@ def export(request, *args, **kwargs):
     url = 'narzedziownia/export.html'
 
     return render(request,url,context)
+def create_signature_handy_default(request,*args, **kwargs):
+
+    Pracownik_no_signature_handy_default = Pracownik.objects.filter(signature_handy_default__isnull=True)
+    licz=0
+    for p in Pracownik_no_signature_handy_default:
+        if Pobranie.objects.filter(pracownik__pk=p.pk,signature_handy__isnull=False).first()!=None:
+            pierwsze_pobranie = Pobranie.objects.filter(pracownik__pk=p.pk,signature_handy__isnull=False).order_by('data_pobrania').first()
+            licz+=1
+            print(pierwsze_pobranie, pierwsze_pobranie.data_pobrania)
+            
+            p.signature_handy_default=pierwsze_pobranie.signature_handy
+            p.save()
+    print(licz)
+
+    return HttpResponse("koniec")

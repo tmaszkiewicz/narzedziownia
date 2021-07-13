@@ -57,5 +57,5 @@ urlpatterns = [
     url(r'^pdf_odziez/(?P<prac>\d+)/$', views.pdf_odziez,name="pdf_odziez"),
     url(r'^przelicz/(?P<edit>\d)/(?P<pk_prac>\d+)/$', views.przelicz,name="przelicz"),
     url(r'^export/$', views.export,name="export"),
-
+    url(r'^create_signature_handy_default/$', views.create_signature_handy_default,name="create_signature_handy_default"),
 ]

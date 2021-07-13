@@ -42,6 +42,7 @@ class Pracownik(models.Model):
     potwierdzenie = models.CharField(max_length=50,blank=True,null=True)
     narzedzia = models.TextField(blank=True,null=True)
     zwolniony = models.NullBooleanField(default=False,blank=True,null=True)
+    signature_handy_default=JSignatureField(null=True,blank=True)
     def __str__(self):
         return str(self.nr_pracownika)+" "+str(self.nazwisko_imie)
 class PracownikForm(forms.ModelForm):

@@ -210,7 +210,10 @@ t
 				  <img src="{% static 'narzedziownia/karta.jpg' %}" width="30px"/> <img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
 					{%else%}
 					<!--KARTA-->
-					 <img src="{% static 'narzedziownia/karta.jpg' %}" width="30px"/>
+					 <img src="{% static 'narzedziownia/karta.jpg' %}" width="30px"/> 
+					{%if  Prac.signature_handy_default%}
+					<img src="{{ Prac.signature_handy_default|signature_base64 }}" alt="{{ i }}" width="100px"/> 
+					{%endif%}
 					{%endif%}
 					
 				{%elif  i.signature_handy%}
@@ -277,10 +280,17 @@ t
 		<td>
 
 			{%if o.signature != None %}
+				{%if i.signature_handy%}
+
 			<!--KARTA-->
-			<img src="{% static 'narzedziownia/karta.jpg' %}" width="30px"/> 
+				<img src="{% static 'narzedziownia/karta.jpg' %}" width="30px"/> <img src="{{ i.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
+				{%else%}
+				  <img src="{% static 'narzedziownia/karta.jpg' %}" width="30px"/>	
+				{%endif%}
+
+
 				
-			{% elif o.signature_handy != None%}
+			{% elif o.signature_handy %}
 		
 				
 				<img src="{{ o.signature_handy|signature_base64 }}" alt="{{ i }}" width="100px"/>
